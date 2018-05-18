@@ -49,13 +49,15 @@ namespace Couchbase.Extensions.Encryption
             byte[] signatureBytes = null;
             if (cryptoProvider.RequiresAuthentication)
             {
-                //sig = HMAC256(BASE64(alg + iv + ciphertext))
+                //sig = HMAC256(BASE64(kid + alg + iv + ciphertext))
+                var kidBytes = Encoding.UTF8.GetBytes(cryptoProvider.PublicKeyName);
                 var algBytes = Encoding.UTF8.GetBytes(cryptoProvider.ProviderName);
-                var buffer = new byte[algBytes.Length + iv.Length + cipherText.Length];
+                var buffer = new byte[kidBytes.Length + algBytes.Length + iv.Length + cipherText.Length];
 
-                Buffer.BlockCopy(algBytes, 0, buffer, 0, algBytes.Length);
-                Buffer.BlockCopy(iv, 0, buffer, algBytes.Length, iv.Length);
-                Buffer.BlockCopy(cipherText, 0, buffer, algBytes.Length + iv.Length, cipherText.Length);
+                Buffer.BlockCopy(kidBytes, 0, buffer, 0, kidBytes.Length);
+                Buffer.BlockCopy(algBytes, 0, buffer, kidBytes.Length, algBytes.Length);
+                Buffer.BlockCopy(iv, 0, buffer, kidBytes.Length + algBytes.Length, iv.Length);
+                Buffer.BlockCopy(cipherText, 0, buffer, kidBytes.Length + algBytes.Length + iv.Length, cipherText.Length);
 
                 //sign the entire buffer
                 signatureBytes = cryptoProvider.GetSignature(buffer);
@@ -63,6 +65,7 @@ namespace Couchbase.Extensions.Encryption
 
             var token = new JObject(
                 new JProperty("alg", cryptoProvider.ProviderName),
+                new JProperty("kid", cryptoProvider.PublicKeyName),
                 new JProperty("ciphertext", base64CipherText));
 
             if (signatureBytes != null)
@@ -84,6 +87,7 @@ namespace Couchbase.Extensions.Encryption
 
             var encryptedFields = (JObject)JToken.ReadFrom(reader);
             var alg = encryptedFields.SelectToken("alg");
+            var kid = encryptedFields.SelectToken("kid");
             var cipherText = encryptedFields.SelectToken("ciphertext");
             var iv = encryptedFields.SelectToken("iv");
             var signature = encryptedFields.SelectToken("sig");
@@ -100,12 +104,14 @@ namespace Couchbase.Extensions.Encryption
             if (signature != null && ivBytes != null)
             {
                 //sig = BASE64(HMAC256(alg + BASE64(iv) + BASE64(ciphertext)))
+                var kidBytes = Encoding.UTF8.GetBytes(kid.Value<string>());
                 var algBytes = Encoding.UTF8.GetBytes(alg.Value<string>());
 
-                var buffer = new byte[algBytes.Length + ivBytes.Length + cipherBytes.Length];
-                Buffer.BlockCopy(algBytes, 0, buffer, 0, algBytes.Length);
-                Buffer.BlockCopy(ivBytes, 0, buffer, algBytes.Length, ivBytes.Length);
-                Buffer.BlockCopy(cipherBytes, 0, buffer, algBytes.Length + ivBytes.Length, cipherBytes.Length);
+                var buffer = new byte[kidBytes.Length + algBytes.Length + ivBytes.Length + cipherBytes.Length];
+                Buffer.BlockCopy(kidBytes, 0, buffer, 0, kidBytes.Length);
+                Buffer.BlockCopy(algBytes, 0, buffer, kidBytes.Length, algBytes.Length);
+                Buffer.BlockCopy(ivBytes, 0, buffer, kidBytes.Length + algBytes.Length, ivBytes.Length);
+                Buffer.BlockCopy(cipherBytes, 0, buffer, kidBytes.Length + algBytes.Length+ ivBytes.Length, cipherBytes.Length);
 
                 var sig = cryptoProvider.GetSignature(buffer);
                 if (signature.Value<string>() != Convert.ToBase64String(sig))
@@ -114,7 +120,7 @@ namespace Couchbase.Extensions.Encryption
                 }
             }
 
-            var decryptedPayload = cryptoProvider.Decrypt(cipherBytes, ivBytes);
+            var decryptedPayload = cryptoProvider.Decrypt(cipherBytes, ivBytes, kid.Value<string>());
             return ConvertToType(Encoding.UTF8.GetString(decryptedPayload));
         }
 
