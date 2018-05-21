@@ -9,8 +9,8 @@
     <Description>Field level encryption extensions for Couchbase .NET SDK</Description>
     <PackageTags>Couchbase;encryption;cryptography;nosql;JSON;database</PackageTags>
 
-    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/couchbaselabs/couchbase.extensions</PackageProjectUrl>
+    <PackageLicenseUrl>https://www.couchbase.com/ESLA-11132015</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/couchbase/dotnet-couchbase-encryption</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/couchbaselabs/Linq2Couchbase/master/Packaging/couchbase-logo.png</PackageIconUrl>
     <PackageReleaseNotes></PackageReleaseNotes>
 
@@ -25,6 +25,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AssemblyVersion>1.0.0.2</AssemblyVersion>
     <FileVersion>1.0.0.2</FileVersion>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
