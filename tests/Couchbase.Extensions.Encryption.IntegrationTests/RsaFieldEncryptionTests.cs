@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
-using System.Text;
+using System.Xml.Serialization;
 using Couchbase.Configuration.Client;
 using Couchbase.Extensions.Encryption.Providers;
 using Couchbase.Extensions.Encryption.Stores;
@@ -9,21 +9,20 @@ using Xunit;
 
 namespace Couchbase.Extensions.Encryption.IntegrationTests
 {
-    public class FieldEncryptionTests
+    public class RsaFieldEncryptionTests
     {
+        const string PublicKeyName = "MyPublicKeyName";
+        const string PrivateKeyName = "MyPrivateKeyName";
+
         [Fact]
         public void Test_Encrypt_String()
         {
-            var key = "!mysecretkey#9^5usdk39d&dlf)03sL";
-
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new AesCryptoProvider(new InsecureKeyStore(
-                    new KeyValuePair<string, string>("publickey", key),
-                    new KeyValuePair<string, string>("mysecret", "myauthpassword")))
+                new RsaCryptoProvider(GetKeyStore())
                 {
-                    PublicKeyName = "publickey",
-                    SigningKeyName = "mysecret"
+                    PublicKeyName = PublicKeyName,
+                    PrivateKeyName = PrivateKeyName
                 }));
 
             using (var cluster = new Cluster(config))
@@ -58,17 +57,13 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
         [Fact]
         public void Test_Encrypt2_String()
         {
-                var key = "!mysecretkey#9^5usdk39d&dlf)03sL";
-
                 var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
-            config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new AesCryptoProvider(new InsecureKeyStore(
-                    new KeyValuePair<string, string>("publickey", key),
-                    new KeyValuePair<string, string>("mysecret", "myauthpassword")))
-                {
-                    PublicKeyName = "publickey",
-                    SigningKeyName = "mysecret"
-                }));
+                config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
+                    new RsaCryptoProvider(GetKeyStore())
+                    {
+                        PublicKeyName = PublicKeyName,
+                        PrivateKeyName = PrivateKeyName
+                    }));
 
                 using (var cluster = new Cluster(config))
                 {
@@ -89,20 +84,15 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
         }
 
         [Fact]
-        public void Test_Encrypt2_Int()
+        public void zTest_Encrypt2_Int()
         {
-            var key = "!mysecretkey#9^5usdk39d&dlf)03sL";
-
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new AesCryptoProvider(new InsecureKeyStore(
-                    new KeyValuePair<string, string>("publickey", key),
-                    new KeyValuePair<string, string>("mysecret", "myauthpassword")))
+                new RsaCryptoProvider(GetKeyStore())
                 {
-                    PublicKeyName = "publickey",
-                    SigningKeyName = "mysecret"
+                    PublicKeyName = PublicKeyName,
+                    PrivateKeyName = PrivateKeyName
                 }));
-
 
             using (var cluster = new Cluster(config))
             {
@@ -125,18 +115,13 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
         [Fact]
         public void Test_Encrypt2_IntString()
         {
-            var key = "!mysecretkey#9^5usdk39d&dlf)03sL";
-
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new AesCryptoProvider(new InsecureKeyStore(
-                    new KeyValuePair<string, string>("publickey", key),
-                    new KeyValuePair<string, string>("mysecret", "myauthpassword")))
+                new RsaCryptoProvider(GetKeyStore())
                 {
-                    PublicKeyName = "publickey",
-                    SigningKeyName = "mysecret"
+                    PublicKeyName = PublicKeyName,
+                    PrivateKeyName = PrivateKeyName
                 }));
-
 
             using (var cluster = new Cluster(config))
             {
@@ -159,16 +144,12 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
         [Fact]
         public void Test_Encrypt_Array()
         {
-            var key = "!mysecretkey#9^5usdk39d&dlf)03sL";
-
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new AesCryptoProvider(new InsecureKeyStore(
-                    new KeyValuePair<string, string>("publickey", key),
-                    new KeyValuePair<string, string>("mysecret", "myauthpassword")))
+                new RsaCryptoProvider(GetKeyStore())
                 {
-                    PublicKeyName = "publickey",
-                    SigningKeyName = "mysecret"
+                    PublicKeyName = PublicKeyName,
+                    PrivateKeyName = PrivateKeyName
                 }));
 
             using (var cluster = new Cluster(config))
@@ -204,16 +185,12 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
         [Fact]
         public void Test_Encrypt_NestedObject()
         {
-            var key = "!mysecretkey#9^5usdk39d&dlf)03sL";
-
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new AesCryptoProvider(new InsecureKeyStore(
-                    new KeyValuePair<string, string>("publickey", key),
-                    new KeyValuePair<string, string>("mysecret", "myauthpassword")))
+                new RsaCryptoProvider(GetKeyStore())
                 {
-                    PublicKeyName = "publickey",
-                    SigningKeyName = "mysecret"
+                    PublicKeyName = PublicKeyName,
+                    PrivateKeyName = PrivateKeyName
                 }));
 
             using (var cluster = new Cluster(config))
@@ -296,6 +273,31 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
         public class PocoMoco
         {
             public string Bar { get; set; }
+        }
+
+        public InsecureKeyStore GetKeyStore()
+        {
+            using (var rsa = RSA.Create())
+            {
+                rsa.KeySize = 2048;
+                var privateKey = rsa.ExportParameters(true);
+                var publicKey = rsa.ExportParameters(false);
+
+                return  new InsecureKeyStore(
+                    new KeyValuePair<string, string>(PrivateKeyName, GetKeyAsString(privateKey)),
+                    new KeyValuePair<string, string>(PublicKeyName, GetKeyAsString(publicKey)));
+            }
+        }
+
+        private string GetKeyAsString(RSAParameters parameters)
+        {
+            using (var writer = new StringWriter())
+            {
+                var serializer = new XmlSerializer(typeof(RSAParameters));
+                serializer.Serialize(writer, parameters);
+
+                return writer.ToString();
+            }
         }
     }
 }

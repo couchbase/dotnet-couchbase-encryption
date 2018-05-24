@@ -6,14 +6,15 @@ namespace Couchbase.Extensions.Encryption.Providers
 {
     public class AesCryptoProvider : CryptoProviderBase
     {
-        public AesCryptoProvider(IKeystoreProvider keystore) : this()
+        public AesCryptoProvider(IKeystoreProvider keystore)
+            : this()
         {
             KeyStore = keystore;
         }
 
         public AesCryptoProvider()
         {
-            ProviderName = "AES-256-HMAC-SHA256";
+            AlgorithmName = "AES-256-CBC-HMAC-SHA256";
         }
 
         public override byte[] Decrypt(byte[] encryptedBytes, byte[] iv, string keyName = null)
