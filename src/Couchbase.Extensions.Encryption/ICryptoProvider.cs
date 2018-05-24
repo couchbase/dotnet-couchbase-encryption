@@ -36,7 +36,7 @@ namespace Couchbase.Extensions.Encryption
         byte[] GetSignature(byte[] cipherBytes);
 
         /// <summary>
-        /// The name of the configured <see cref="ICryptoProvider"/> - for example 'MyProvider'.
+        /// The name or alias of the configured <see cref="ICryptoProvider"/> - for example 'MyProvider'.
         /// </summary>
         string ProviderName { get; set; }
 
@@ -59,6 +59,11 @@ namespace Couchbase.Extensions.Encryption
         /// True if the algorithm requires a signature to be generated and compared.
         /// </summary>
         bool RequiresAuthentication { get; }
+
+        /// <summary>
+        /// The name of the algorithmn that the provider supports
+        /// </summary>
+        string AlgorithmName { get; }
     }
 }
 

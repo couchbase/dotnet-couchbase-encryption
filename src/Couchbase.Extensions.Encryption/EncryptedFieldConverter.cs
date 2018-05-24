@@ -51,7 +51,7 @@ namespace Couchbase.Extensions.Encryption
             {
                 //sig = HMAC256(BASE64(kid + alg + iv + ciphertext))
                 var kidBytes = Encoding.UTF8.GetBytes(cryptoProvider.PublicKeyName);
-                var algBytes = Encoding.UTF8.GetBytes(cryptoProvider.ProviderName);
+                var algBytes = Encoding.UTF8.GetBytes(cryptoProvider.AlgorithmName);
                 var buffer = new byte[kidBytes.Length + algBytes.Length + iv.Length + cipherText.Length];
 
                 Buffer.BlockCopy(kidBytes, 0, buffer, 0, kidBytes.Length);
@@ -64,7 +64,7 @@ namespace Couchbase.Extensions.Encryption
             }
 
             var token = new JObject(
-                new JProperty("alg", cryptoProvider.ProviderName),
+                new JProperty("alg", cryptoProvider.AlgorithmName),
                 new JProperty("kid", cryptoProvider.PublicKeyName),
                 new JProperty("ciphertext", base64CipherText));
 
@@ -120,7 +120,11 @@ namespace Couchbase.Extensions.Encryption
                 }
             }
 
-            var decryptedPayload = cryptoProvider.Decrypt(cipherBytes, ivBytes, kid.Value<string>());
+            byte[] decryptedPayload = null;
+            decryptedPayload = cryptoProvider.PrivateKeyName == null ?
+                cryptoProvider.Decrypt(cipherBytes, ivBytes, kid.Value<string>()) :
+                cryptoProvider.Decrypt(cipherBytes, ivBytes);
+
             return ConvertToType(Encoding.UTF8.GetString(decryptedPayload));
         }
 
