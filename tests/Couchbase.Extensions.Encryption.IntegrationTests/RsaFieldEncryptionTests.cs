@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Xml.Serialization;
 using Couchbase.Configuration.Client;
 using Couchbase.Extensions.Encryption.Providers;
@@ -17,13 +18,10 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
         [Fact]
         public void Test_Encrypt_String()
         {
+            var key = "RSA-thepoco";
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new RsaCryptoProvider(GetKeyStore())
-                {
-                    PublicKeyName = PublicKeyName,
-                    PrivateKeyName = PrivateKeyName
-                }));
+                new RsaCryptoProvider(GetKeyStore())));
 
             using (var cluster = new Cluster(config))
             {
@@ -41,11 +39,11 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
                     Baz = new List<int> {3, 4}
                 };
 
-                var result = bucket.Upsert("thepoco", poco);
+                var result = bucket.Upsert(key, poco);
 
                 Assert.True(result.Success);
 
-                var get = bucket.Get<Poco>("thepoco");
+                var get = bucket.Get<Poco>(key);
                 Assert.True(get.Success);
                 Assert.Equal("Bar", get.Value.Bar);
                 Assert.Equal(90, get.Value.Foo);
@@ -57,42 +55,36 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
         [Fact]
         public void Test_Encrypt2_String()
         {
-                var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
-                config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                    new RsaCryptoProvider(GetKeyStore())
-                    {
-                        PublicKeyName = PublicKeyName,
-                        PrivateKeyName = PrivateKeyName
-                    }));
+            var key = "RSA-thepoco2_string";
+            var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
+            config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
+                new RsaCryptoProvider(GetKeyStore())));
 
-                using (var cluster = new Cluster(config))
+            using (var cluster = new Cluster(config))
+            {
+                cluster.Authenticate("Administrator", "password");
+                var bucket = cluster.OpenBucket();
+
+                var poco = new Poco2
                 {
-                    cluster.Authenticate("Administrator", "password");
-                    var bucket = cluster.OpenBucket();
+                    Message = "The old grey goose jumped over the wrickety gate."
+                };
+                var result = bucket.Upsert(key, poco);
 
-                    var poco = new Poco2
-                    {
-                        Message = "The old grey goose jumped over the wrickety gate."
-                    };
-                    var result = bucket.Upsert("thepoco2_string", poco);
+                Assert.True(result.Success);
 
-                    Assert.True(result.Success);
-
-                    var get = bucket.Get<Poco2>("thepoco2_string");
-                    Assert.True(get.Success);
+                var get = bucket.Get<Poco2>(key);
+                Assert.True(get.Success);
             }
         }
 
         [Fact]
-        public void zTest_Encrypt2_Int()
+        public void Test_Encrypt2_Int()
         {
+            var key = "RSA-thepoco2_int";
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new RsaCryptoProvider(GetKeyStore())
-                {
-                    PublicKeyName = PublicKeyName,
-                    PrivateKeyName = PrivateKeyName
-                }));
+                new RsaCryptoProvider(GetKeyStore())));
 
             using (var cluster = new Cluster(config))
             {
@@ -103,11 +95,11 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
                 {
                     Message = 10
                 };
-                var result = bucket.Upsert("thepoco2_int", poco);
+                var result = bucket.Upsert(key, poco);
 
                 Assert.True(result.Success);
 
-                var get = bucket.Get<Poco2>("thepoco2_int");
+                var get = bucket.Get<Poco2>(key);
                 Assert.True(get.Success);
             }
         }
@@ -115,13 +107,10 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
         [Fact]
         public void Test_Encrypt2_IntString()
         {
+            var key = "RSA-thepoco2_intstring";
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new RsaCryptoProvider(GetKeyStore())
-                {
-                    PublicKeyName = PublicKeyName,
-                    PrivateKeyName = PrivateKeyName
-                }));
+                new RsaCryptoProvider(GetKeyStore())));
 
             using (var cluster = new Cluster(config))
             {
@@ -132,11 +121,11 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
                 {
                     Message = "10"
                 };
-                var result = bucket.Upsert("thepoco2_intstring", poco);
+                var result = bucket.Upsert(key, poco);
 
                 Assert.True(result.Success);
 
-                var get = bucket.Get<Poco2>("thepoco2_intstring");
+                var get = bucket.Get<Poco2>(key);
                 Assert.True(get.Success);
             }
         }
@@ -144,13 +133,10 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
         [Fact]
         public void Test_Encrypt_Array()
         {
+            var key = "RSA-pocowitharray";
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new RsaCryptoProvider(GetKeyStore())
-                {
-                    PublicKeyName = PublicKeyName,
-                    PrivateKeyName = PrivateKeyName
-                }));
+                new RsaCryptoProvider(GetKeyStore())));
 
             using (var cluster = new Cluster(config))
             {
@@ -172,11 +158,11 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
                         "gate"
                     }
                 };
-                var result = bucket.Upsert("pocowitharray", poco);
+                var result = bucket.Upsert(key, poco);
 
                 Assert.True(result.Success);
 
-                var get = bucket.Get<PocoWithArray>("pocowitharray");
+                var get = bucket.Get<PocoWithArray>(key);
                 Assert.True(get.Success);
             }
         }
@@ -185,13 +171,10 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
         [Fact]
         public void Test_Encrypt_NestedObject()
         {
+            var key = "RSA-mypocokey";
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new RsaCryptoProvider(GetKeyStore())
-                {
-                    PublicKeyName = PublicKeyName,
-                    PrivateKeyName = PrivateKeyName
-                }));
+                new RsaCryptoProvider(GetKeyStore())));
 
             using (var cluster = new Cluster(config))
             {
@@ -206,9 +189,9 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
                         MyValue = "The old grey goose jumped over the wrickety gate."
                     }
                 };
-                var result = bucket.Upsert("mypocokey", poco);
+                var result = bucket.Upsert(key, poco);
 
-                var get = bucket.Get<PocoWithObject>("mypocokey");
+                var get = bucket.Get<PocoWithObject>(key);
                 Assert.True(result.Success);
             }
         }
@@ -226,7 +209,6 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
             public int MyInt { get; set; }
         }
 
-
         public class PocoWithInt
         {
             [EncryptedField(Provider = "MyProvider")]
@@ -239,7 +221,6 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
             public string Message { get; set; }
         }
 
-
         public class Poco2
         {
             [EncryptedField(Provider = "MyProvider")]
@@ -251,7 +232,6 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
             [EncryptedField(Provider = "MyProvider")]
             public List<string> Message { get; set; }
         }
-
 
         public class Poco
         {
@@ -275,29 +255,12 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
             public string Bar { get; set; }
         }
 
-        public InsecureKeyStore GetKeyStore()
+        public IKeystoreProvider GetKeyStore()
         {
-            using (var rsa = RSA.Create())
-            {
-                rsa.KeySize = 2048;
-                var privateKey = rsa.ExportParameters(true);
-                var publicKey = rsa.ExportParameters(false);
+            X509Certificate2 cert = new X509Certificate2("public_privatekey.pfx", "password",
+                X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
 
-                return  new InsecureKeyStore(
-                    new KeyValuePair<string, string>(PrivateKeyName, GetKeyAsString(privateKey)),
-                    new KeyValuePair<string, string>(PublicKeyName, GetKeyAsString(publicKey)));
-            }
-        }
-
-        private string GetKeyAsString(RSAParameters parameters)
-        {
-            using (var writer = new StringWriter())
-            {
-                var serializer = new XmlSerializer(typeof(RSAParameters));
-                serializer.Serialize(writer, parameters);
-
-                return writer.ToString();
-            }
+            return new X509KeyStore(cert);
         }
     }
 }

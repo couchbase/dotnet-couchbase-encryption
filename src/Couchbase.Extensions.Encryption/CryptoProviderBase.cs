@@ -21,8 +21,8 @@ namespace Couchbase.Extensions.Encryption
         }
 
         public string ProviderName { get; set; }
-        public string PublicKeyName { get; set; }
-        public string PrivateKeyName { get; set; }
+        public virtual string PublicKeyName { get; set; }
+        public virtual string PrivateKeyName { get; set; }
         public string SigningKeyName { get; set; }
         public abstract bool RequiresAuthentication { get; }
         public string AlgorithmName { get; protected set; }

@@ -36,7 +36,7 @@ namespace Couchbase.Extensions.Encryption.UnitTests
             };
 
             var bytes = serializer.Serialize(poco);
-            bytes[120] = Convert.FromBase64String(Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("s")))[0];
+            bytes[138] = Convert.FromBase64String(Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("s")))[0];
 
             Assert.Throws<AuthenticationException>(() => serializer.Deserialize<Poco>(bytes, 0, bytes.Length));
         }

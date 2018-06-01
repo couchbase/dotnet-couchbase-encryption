@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Xml.Serialization;
 
 namespace Couchbase.Extensions.Encryption.Providers
 {
@@ -18,21 +16,19 @@ namespace Couchbase.Extensions.Encryption.Providers
 
         public RsaCryptoProvider()
         {
-            AlgorithmName = "RSA-2048-OAEP";
+            AlgorithmName = "RSA-2048-OAEP-SHA1";
             KeySize = 2048;
 #if NETSTANDARD
-            Padding = RSAEncryptionPadding.OaepSHA512;
+            Padding = RSAEncryptionPadding.OaepSHA1;
 #endif
         }
-
-        public IKeystoreProvider KeyStore { get; set; }
 
         public override byte[] Decrypt(byte[] cipherBytes, byte[] iv = null, string keyName = null)
         {
 #if NETSTANDARD
             using (var rsa = new RSACng(KeySize))
             {
-                var privateKey = GetParameters(KeyStore.GetKey(PrivateKeyName));
+                var privateKey = RSAExtensions.FromXmlString(KeyStore.GetKey(PrivateKeyName));
                 rsa.ImportParameters(privateKey);
 
                 return rsa.Decrypt(cipherBytes, Padding);
@@ -40,7 +36,7 @@ namespace Couchbase.Extensions.Encryption.Providers
 #else
             using (var rsa = new RSACryptoServiceProvider(KeySize))
             {
-                var privateKey = GetParameters(KeyStore.GetKey(PrivateKeyName));
+                var privateKey = RSAExtensions.FromXmlString(KeyStore.GetKey(PrivateKeyName));
                 rsa.ImportParameters(privateKey);
 
                 return rsa.Decrypt(cipherBytes, UseOaepPadding);
@@ -54,7 +50,7 @@ namespace Couchbase.Extensions.Encryption.Providers
 #if NETSTANDARD
             using (var rsa = new RSACng(KeySize))
             {
-                var publicKey = GetParameters(KeyStore.GetKey(PublicKeyName));
+                var publicKey = RSAExtensions.FromXmlString(KeyStore.GetKey(PublicKeyName));
                 rsa.ImportParameters(publicKey);
 
                 return rsa.Encrypt(plainBytes, Padding);
@@ -62,7 +58,7 @@ namespace Couchbase.Extensions.Encryption.Providers
 #else
             using (var rsa = new RSACryptoServiceProvider(KeySize))
             {
-                var publicKey = GetParameters(KeyStore.GetKey(PublicKeyName));
+                var publicKey = RSAExtensions.FromXmlString(KeyStore.GetKey(PublicKeyName));
                 rsa.ImportParameters(publicKey);
 
                 return rsa.Encrypt(plainBytes, UseOaepPadding);
@@ -75,7 +71,7 @@ namespace Couchbase.Extensions.Encryption.Providers
 #if NETSTANDARD
             using (var rsa = new RSACng(KeySize))
             {
-                var privateKey = GetParameters(KeyStore.GetKey(PrivateKeyName));
+                var privateKey = RSAExtensions.FromXmlString(KeyStore.GetKey(PrivateKeyName));
                 rsa.ImportParameters(privateKey);
 
                 var cypherBytes = Convert.FromBase64String(value.ToString());
@@ -86,7 +82,7 @@ namespace Couchbase.Extensions.Encryption.Providers
 #else
             using (var rsa = new RSACryptoServiceProvider(KeySize))
             {
-                var privateKey = GetParameters(KeyStore.GetKey(PrivateKeyName));
+                var privateKey = RSAExtensions.FromXmlString(KeyStore.GetKey(PrivateKeyName));
                 rsa.ImportParameters(privateKey);
 
                 var cypherBytes = Convert.FromBase64String(value.ToString());
@@ -102,7 +98,7 @@ namespace Couchbase.Extensions.Encryption.Providers
 #if NETSTANDARD
             using (var rsa = new RSACng(KeySize))
             {
-                var publicKey = GetParameters(KeyStore.GetKey(PublicKeyName));
+                var publicKey = RSAExtensions.FromXmlString(KeyStore.GetKey(PublicKeyName));
                 rsa.ImportParameters(publicKey);
 
 
@@ -114,7 +110,7 @@ namespace Couchbase.Extensions.Encryption.Providers
 #else
             using (var rsa = new RSACryptoServiceProvider(KeySize))
             {
-                var publicKey = GetParameters(KeyStore.GetKey(PublicKeyName));
+                var publicKey = RSAExtensions.FromXmlString(KeyStore.GetKey(PublicKeyName));
                 rsa.ImportParameters(publicKey);
 
                 var plainBytes = Encoding.UTF8.GetBytes(value.ToString());
@@ -125,15 +121,6 @@ namespace Couchbase.Extensions.Encryption.Providers
 #endif
         }
 
-        private RSAParameters GetParameters(string key)
-        {
-            using (var reader = new StringReader(key))
-            {
-                var serializer = new XmlSerializer(typeof(RSAParameters));
-                return (RSAParameters)serializer.Deserialize(reader);
-            }
-        }
-
         public override bool RequiresAuthentication => false;
 
         public int KeySize { get; set; }
@@ -141,6 +128,18 @@ namespace Couchbase.Extensions.Encryption.Providers
 #if NETSTANDARD
         public RSAEncryptionPadding Padding { get; set; }
 #endif
+
+        public override string PrivateKeyName
+        {
+            get => "PrivateKey";
+            set => throw new NotSupportedException();
+        }
+
+        public override string PublicKeyName
+        {
+            get => "PublicKey";
+            set => throw new NotSupportedException();
+        }
     }
 }
 
