@@ -14,13 +14,13 @@ namespace Couchbase.Extensions.Encryption.Providers
 {
     public static class RSAExtensions
     {
-        public static string GetKey(this X509KeyStore keyStore, bool isPrivateKey)
+        public static string GetKey(this X509CertificateKeyStore certificateKeyStore, bool isPrivateKey)
         {
  ;
 #if NETSTANDARD
-            return keyStore.GetCertificate().GetRSAPrivateKey().ExportParameters(isPrivateKey).ToXmlString(isPrivateKey);
+            return certificateKeyStore.GetCertificate().GetRSAPrivateKey().ExportParameters(isPrivateKey).ToXmlString(isPrivateKey);
 #else
-            return  keyStore.GetCertificate().PrivateKey.ToXmlString(isPrivateKey);
+            return  certificateKeyStore.GetCertificate().PrivateKey.ToXmlString(isPrivateKey);
 #endif
         }
 

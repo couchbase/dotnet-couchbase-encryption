@@ -4,9 +4,14 @@ using System.Text;
 
 namespace Couchbase.Extensions.Encryption.Providers
 {
+    /// <summary>
+    /// An asymmetric crypto provider based off of RSA-2048 and OAEP-SHA1 padding. Use with the <see cref="Stores.X509CertificateKeyStore"/>
+    /// </summary>
     public class RsaCryptoProvider : CryptoProviderBase
     {
+#if NET45
         private const bool UseOaepPadding = true;
+#endif
 
         public RsaCryptoProvider(IKeystoreProvider keyStore)
             : this()
@@ -128,18 +133,6 @@ namespace Couchbase.Extensions.Encryption.Providers
 #if NETSTANDARD
         public RSAEncryptionPadding Padding { get; set; }
 #endif
-
-        public override string PrivateKeyName
-        {
-            get => "PrivateKey";
-            set => throw new NotSupportedException();
-        }
-
-        public override string PublicKeyName
-        {
-            get => "PublicKey";
-            set => throw new NotSupportedException();
-        }
     }
 }
 

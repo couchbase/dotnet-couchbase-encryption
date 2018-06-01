@@ -17,9 +17,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net45|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;NET46</DefineConstants>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Utils\PemToXmlConverter.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
@@ -46,10 +43,6 @@
     </None>    <None Update="public_privatekey.pfx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Utils\" />
   </ItemGroup>
 
 
