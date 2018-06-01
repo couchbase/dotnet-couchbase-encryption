@@ -21,7 +21,11 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
             var key = "RSA-thepoco";
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new RsaCryptoProvider(GetKeyStore())));
+                new RsaCryptoProvider(GetKeyStore())
+                {
+                    PrivateKeyName = PrivateKeyName,
+                    PublicKeyName = PublicKeyName
+                }));
 
             using (var cluster = new Cluster(config))
             {
@@ -58,7 +62,11 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
             var key = "RSA-thepoco2_string";
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new RsaCryptoProvider(GetKeyStore())));
+                new RsaCryptoProvider(GetKeyStore())
+                {
+                    PrivateKeyName = PrivateKeyName,
+                    PublicKeyName = PublicKeyName
+                }));
 
             using (var cluster = new Cluster(config))
             {
@@ -84,7 +92,11 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
             var key = "RSA-thepoco2_int";
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new RsaCryptoProvider(GetKeyStore())));
+                new RsaCryptoProvider(GetKeyStore())
+                {
+                    PrivateKeyName = PrivateKeyName,
+                    PublicKeyName = PublicKeyName
+                }));
 
             using (var cluster = new Cluster(config))
             {
@@ -110,7 +122,11 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
             var key = "RSA-thepoco2_intstring";
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new RsaCryptoProvider(GetKeyStore())));
+                new RsaCryptoProvider(GetKeyStore())
+                {
+                    PrivateKeyName = PrivateKeyName,
+                    PublicKeyName = PublicKeyName
+                }));
 
             using (var cluster = new Cluster(config))
             {
@@ -136,7 +152,11 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
             var key = "RSA-pocowitharray";
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new RsaCryptoProvider(GetKeyStore())));
+                new RsaCryptoProvider(GetKeyStore())
+                {
+                    PrivateKeyName = PrivateKeyName,
+                    PublicKeyName = PublicKeyName
+                }));
 
             using (var cluster = new Cluster(config))
             {
@@ -174,7 +194,11 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
             var key = "RSA-mypocokey";
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",
-                new RsaCryptoProvider(GetKeyStore())));
+                new RsaCryptoProvider(GetKeyStore())
+                {
+                    PrivateKeyName = PrivateKeyName,
+                    PublicKeyName = PublicKeyName
+                }));
 
             using (var cluster = new Cluster(config))
             {
@@ -260,7 +284,11 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
             X509Certificate2 cert = new X509Certificate2("public_privatekey.pfx", "password",
                 X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
 
-            return new X509KeyStore(cert);
+            return new X509CertificateKeyStore(cert)
+            {
+                PrivateKeyName = PrivateKeyName,
+                PublicKeyName = PublicKeyName
+            };
         }
     }
 }

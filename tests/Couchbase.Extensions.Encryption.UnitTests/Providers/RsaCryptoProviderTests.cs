@@ -11,6 +11,8 @@ namespace Couchbase.Extensions.Encryption.UnitTests.Providers
     public class RsaCryptoProviderTests
     {
         private IKeystoreProvider _keystore;
+        const string PublicKeyName = "MyPublicKeyName";
+        const string PrivateKeyName = "MyPrivateKeyName";
 
         public RsaCryptoProviderTests()
         {
@@ -21,8 +23,8 @@ namespace Couchbase.Extensions.Encryption.UnitTests.Providers
                 var publicKey = rsa.ExportParameters(false);
 
                 _keystore = new InsecureKeyStore(
-                    new KeyValuePair<string, string>("PrivateKey", GetKeyAsString(privateKey)),
-                    new KeyValuePair<string, string>("PublicKey", GetKeyAsString(publicKey)));
+                    new KeyValuePair<string, string>(PublicKeyName, GetKeyAsString(publicKey)),
+                    new KeyValuePair<string, string>(PrivateKeyName, GetKeyAsString(privateKey)));
             }
         }
 
@@ -31,7 +33,9 @@ namespace Couchbase.Extensions.Encryption.UnitTests.Providers
         {
             var rsaCryptoProvider = new RsaCryptoProvider
             {
-                KeyStore = _keystore
+                KeyStore = _keystore,
+                PrivateKeyName = PrivateKeyName,
+                PublicKeyName = PublicKeyName
             };
 
             var someText = "The old grey goose jumped over the wrickety vase.";
@@ -45,7 +49,9 @@ namespace Couchbase.Extensions.Encryption.UnitTests.Providers
         {
             var rsaCryptoProvider = new RsaCryptoProvider
             {
-                KeyStore =_keystore
+                KeyStore =_keystore,
+                PrivateKeyName = PrivateKeyName,
+                PublicKeyName = PublicKeyName
             };
 
             var someText = "The old grey goose jumped over the wrickety vase.";
