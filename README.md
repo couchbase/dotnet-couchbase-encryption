@@ -10,7 +10,7 @@ Install-Package Couchbase.Extensions.Encryption -Version 1.0.0-beta2
 
 After installing the dependency, create a configuration to connect to your Couchbase cluster and configure the Key Store and Algorithm provider to use:
 
-```
+```C#
 //define the key store
 var keyStore = new InsecureKeyStore(
     new KeyValuePair<string, string>("publickey", "!mysecretkey#9^5usdk39d&dlf)03sL"),
@@ -35,7 +35,7 @@ var bucket = cluster.OpenBucket();
 Couchbase Field Level Encryption (FLE) uses .NET Attributes to specify which field on a JSON document that is mapped to a POCO (Plain Old C# Object) to encrypt. Here is an example of a JSON document representing a Person and the POCO it is mapped to:
 
 First the JSON:
-```
+```JSON
 {
   "password": "ssloBeD12345",
   "firstName": "Ted",
@@ -47,7 +47,7 @@ First the JSON:
 ```
 This JSON will be mapped to a POCO representing the JSON's structure with the `Password` property annotated with the `EnryptedFieldAttribute` to be encrypted:
 
-```
+```C#
 private class Person
 {
     //Annotate the field to be encrypted
@@ -64,7 +64,7 @@ private class Person
 
 The `EncryptedFieldAttribute` has a `Provider` property which maps to the crypto provider which was configured earlier. During the serialization process the attribute will be a signal for the crypto provider to perform encryption on the contents of the property; when the JSON document is read from the database, the field contents will be decrypted.
 
-```
+```C#
 var person = new Person
 {
     Age = 33,
@@ -81,3 +81,7 @@ var result = await bucket.InsertAsync("p1", person);
 var result1 = await bucket.GetAsync("p1");
 ```
 Above, a person instance is created from the Person POCO and sent to the database. Just before going over the wire, during the serialization process, the `EncryptedFieldAttribute` will be detected and the crypto provider will be engaged, taking the contents of the property and encrypting it. When `GetAsync` is called, the document will be fetched from the database and just after coming over the network, during the deserialization process, the contents of teh field will be decrypted transparently.
+
+## Supported Algorithms
+
+## Supported Key Stores
