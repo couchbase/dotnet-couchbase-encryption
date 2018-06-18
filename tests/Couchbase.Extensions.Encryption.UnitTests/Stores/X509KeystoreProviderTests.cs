@@ -39,7 +39,7 @@ namespace Couchbase.Extensions.Encryption.UnitTests.Stores
                 PublicKeyName = PublicKeyName
             };
 
-            Assert.Throws<CryptoKeyMisMatchException>(() => keyStore.GetKey(keyname));
+            Assert.Throws<CryptoKeyMismatchException>(() => keyStore.GetKey(keyname));
         }
     }
 }
