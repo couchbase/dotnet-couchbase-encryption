@@ -13,6 +13,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Extensions.Encryp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Extensions.Encryption.IntegrationTests", "tests\Couchbase.Extensions.Encryption.IntegrationTests\Couchbase.Extensions.Encryption.IntegrationTests.csproj", "{0B46FECE-6265-40F7-AFFB-9C27615D74D1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{80BC725F-D28C-4866-828E-18CCF25C91F1}"
+	ProjectSection(SolutionItems) = preProject
+		aes-256-provider.md = aes-256-provider.md
+		LICENSE = LICENSE
+		README.md = README.md
+		rsa-2048-provider.md = rsa-2048-provider.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

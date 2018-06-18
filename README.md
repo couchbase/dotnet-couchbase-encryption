@@ -83,5 +83,18 @@ var result1 = await bucket.GetAsync("p1");
 Above, a person instance is created from the Person POCO and sent to the database. Just before going over the wire, during the serialization process, the `EncryptedFieldAttribute` will be detected and the crypto provider will be engaged, taking the contents of the property and encrypting it. When `GetAsync` is called, the document will be fetched from the database and just after coming over the network, during the deserialization process, the contents of teh field will be decrypted transparently.
 
 ## Supported Algorithms
+Currently there is support for two different cryptographic algorithms:
+
+ - [Symmetric key AES-256 with CBC and SHA256 signing](docs/aes-256-provider.md)
+ - [Asymmetric key RSA-2048 with OAEP-SHA1 padding](docs/rsa-2048-provider.md)
+
+Note that the API itself is extensible and additional cryptographic algorithms can be implemented. 
+
 
 ## Supported Key Stores
+
+ - **X509CertificateKeyStore**: a keys store for using x509 certificates in the PKCS #12 (.pfx) format.
+ - **InsecureKeyStore**: an in-memory key store suitable for testing and or secure environments.
+ - **FileSystemKeyStore**: a key store which stores the keys encrypted on disk using the DAPI.
+
+## Errors and Exceptions
