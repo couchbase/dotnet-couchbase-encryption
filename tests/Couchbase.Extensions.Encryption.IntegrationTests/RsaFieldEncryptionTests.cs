@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -6,7 +7,9 @@ using System.Xml.Serialization;
 using Couchbase.Configuration.Client;
 using Couchbase.Extensions.Encryption.Providers;
 using Couchbase.Extensions.Encryption.Stores;
+using Newtonsoft.Json;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Couchbase.Extensions.Encryption.IntegrationTests
 {
@@ -14,6 +17,12 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
     {
         const string PublicKeyName = "MyPublicKeyName";
         const string PrivateKeyName = "MyPrivateKeyName";
+        private readonly ITestOutputHelper output;
+
+        public RsaFieldEncryptionTests(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
 
         [Fact]
         public void Test_Encrypt_String()
@@ -48,6 +57,7 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
                 Assert.True(result.Success);
 
                 var get = bucket.Get<Poco>(key);
+                output.WriteLine(JsonConvert.SerializeObject(get.Value));
                 Assert.True(get.Success);
                 Assert.Equal("Bar", get.Value.Bar);
                 Assert.Equal(90, get.Value.Foo);
@@ -82,6 +92,7 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
                 Assert.True(result.Success);
 
                 var get = bucket.Get<Poco2>(key);
+                output.WriteLine(JsonConvert.SerializeObject(get.Value));
                 Assert.True(get.Success);
             }
         }
@@ -111,7 +122,8 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
 
                 Assert.True(result.Success);
 
-                var get = bucket.Get<Poco2>(key);
+                var get = bucket.Get<PocoWithInt>(key);
+                output.WriteLine(JsonConvert.SerializeObject(get.Value));
                 Assert.True(get.Success);
             }
         }
@@ -141,7 +153,8 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
 
                 Assert.True(result.Success);
 
-                var get = bucket.Get<Poco2>(key);
+                var get = bucket.Get<PocoWithString>(key);
+                output.WriteLine(JsonConvert.SerializeObject(get.Value));
                 Assert.True(get.Success);
             }
         }
@@ -184,9 +197,10 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
 
                 var get = bucket.Get<PocoWithArray>(key);
                 Assert.True(get.Success);
+
+                output.WriteLine(JsonConvert.SerializeObject(get.Value));
             }
         }
-
 
         [Fact]
         public void Test_Encrypt_NestedObject()
@@ -216,6 +230,7 @@ namespace Couchbase.Extensions.Encryption.IntegrationTests
                 var result = bucket.Upsert(key, poco);
 
                 var get = bucket.Get<PocoWithObject>(key);
+                output.WriteLine(JsonConvert.SerializeObject(get.Value));
                 Assert.True(result.Success);
             }
         }
