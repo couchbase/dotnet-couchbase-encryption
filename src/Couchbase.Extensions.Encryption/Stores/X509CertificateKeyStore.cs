@@ -36,7 +36,7 @@ namespace Couchbase.Extensions.Encryption.Stores
             if (string.Compare(keyname, PrivateKeyName, StringComparison.OrdinalIgnoreCase) != 0 &&
                 string.Compare(keyname, PublicKeyName, StringComparison.OrdinalIgnoreCase) != 0)
             {
-                throw new CryptoKeyMisMatchException(keyname, PublicKeyName, PrivateKeyName);
+                throw new CryptoKeyMismatchException(keyname, PublicKeyName, PrivateKeyName);
             }
             var isPrivate = keyname == PrivateKeyName;
 #if NETSTANDARD
@@ -69,12 +69,12 @@ namespace Couchbase.Extensions.Encryption.Stores
         /// <summary>
         /// The name of the public key.
         /// </summary>
-        public string PublicKeyName { get; set; }
+        public string PublicKeyName { get; set; } = "PublicKeyName";
 
         /// <summary>
         /// The name of the private key.
         /// </summary>
-        public string PrivateKeyName { get; set; }
+        public string PrivateKeyName { get; set; } = "PrivateKeyName";
     }
 }
 
