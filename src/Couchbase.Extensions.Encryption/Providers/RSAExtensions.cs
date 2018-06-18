@@ -7,12 +7,11 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Serialization;
 using Couchbase.Extensions.Encryption.Stores;
 
 namespace Couchbase.Extensions.Encryption.Providers
 {
-    public static class RSAExtensions
+    public static class RsaExtensions
     {
         public static string GetKey(this X509CertificateKeyStore certificateKeyStore, bool isPrivateKey)
         {
