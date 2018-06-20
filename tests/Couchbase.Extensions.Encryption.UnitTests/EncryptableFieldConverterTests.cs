@@ -38,7 +38,21 @@ namespace Couchbase.Extensions.Encryption.UnitTests
             var bytes = serializer.Serialize(poco);
             bytes[138] = Convert.FromBase64String(Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("s")))[0];
 
-            Assert.Throws<AuthenticationException>(() => serializer.Deserialize<Poco>(bytes, 0, bytes.Length));
+            Assert.Throws<CryptoProviderSigningFailedException>(() => serializer.Deserialize<Poco>(bytes, 0, bytes.Length));
+        }
+
+        //[Fact]
+        public void Fact_When_Provider_Not_Configured_CryptoProviderNotFoundException()
+        {
+            var providers = new Dictionary<string, ICryptoProvider>();
+            var serializer = new EncryptedFieldSerializer(
+                new JsonSerializerSettings { ContractResolver = new EncryptedFieldContractResolver(providers) },
+                new JsonSerializerSettings { ContractResolver = new EncryptedFieldContractResolver(providers) });
+
+            Assert.Throws<CryptoProviderNotFoundException>(() => serializer.Serialize(new Poco
+            {
+                StringField = "Woot!"
+            }));
         }
 
         public class Poco

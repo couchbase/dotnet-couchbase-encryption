@@ -5,20 +5,10 @@ namespace Couchbase.Extensions.Encryption
     /// <summary>
     /// Thrown when there is a mismatch between the keyname configured in the <see cref="ICryptoProvider"/> and the <see cref="IKeystoreProvider"/>/>
     /// </summary>
-    public class CryptoKeyMismatchException : Exception
+    public class CryptoKeyMismatchException : CryptoProviderException
     {
         public CryptoKeyMismatchException(string expected, string publicKeyName, string privateKeyName) :
-            this(string.Format(FormatMessage, expected, publicKeyName, privateKeyName))
-        {
-        }
-
-        public CryptoKeyMismatchException(string message)
-            : base(message)
-        {
-        }
-
-        public CryptoKeyMismatchException(string message, Exception innerException)
-            : base(message, innerException)
+            base(string.Format(FormatMessage, expected, publicKeyName, privateKeyName))
         {
         }
 

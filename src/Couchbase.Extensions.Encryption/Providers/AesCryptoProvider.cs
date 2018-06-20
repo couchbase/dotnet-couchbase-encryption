@@ -6,6 +6,9 @@ namespace Couchbase.Extensions.Encryption.Providers
 {
     public class AesCryptoProvider : CryptoProviderBase
     {
+        //supports 256 bit keys
+        public const int SupportedKeySize = 32;
+
         public AesCryptoProvider(IKeystoreProvider keystore)
             : this()
         {
@@ -19,7 +22,20 @@ namespace Couchbase.Extensions.Encryption.Providers
 
         public override byte[] Decrypt(byte[] encryptedBytes, byte[] iv, string keyName = null)
         {
-            var key = KeyStore.GetKey(keyName ?? PublicKeyName);
+            //sanity check #1
+            keyName = keyName ?? PublicKeyName;
+            if (string.IsNullOrWhiteSpace(keyName))
+            {
+                throw new CryptoProviderMissingPublicKeyException(ProviderName);
+            }
+
+            //sanity check #2
+            var key = KeyStore.GetKey(keyName);
+            if (key == null || key.Length != SupportedKeySize)
+            {
+                var actualKeySize = key?.Length * 8 ?? 0;
+                throw new CryptoProviderKeySizeException(ProviderName,  SupportedKeySize * 8, actualKeySize);
+            }
 
             using (var aes = Aes.Create())
             {
@@ -42,7 +58,19 @@ namespace Couchbase.Extensions.Encryption.Providers
 
         public override byte[] Encrypt(byte[] plainBytes, out byte[] iv)
         {
+            //sanity check #1
+            if (string.IsNullOrWhiteSpace(PublicKeyName))
+            {
+                throw new CryptoProviderMissingPublicKeyException(ProviderName);
+            }
+
+            //sanity check #2
             var key = KeyStore.GetKey(PublicKeyName);
+            if (key == null || key.Length != SupportedKeySize)
+            {
+                var actualKeySize = key?.Length * 8 ?? 0;
+                throw new CryptoProviderKeySizeException(ProviderName, SupportedKeySize * 8, actualKeySize);
+            }
 
             using (var aes = Aes.Create())
             {
