@@ -2,21 +2,15 @@
 
 namespace Couchbase.Extensions.Encryption
 {
+    /// <summary>
+    /// Thrown when no crypto provider can be found for a given alias.
+    /// </summary>
     public class CryptoProviderNotFoundException : Exception
     {
+        public const string FormatMessage = "The cryptographic provider could not be found for the alias: {0}";
+
         public CryptoProviderNotFoundException(string providerName)
-        {
-            ProviderName = providerName;
-        }
-
-        public CryptoProviderNotFoundException(string message, string providerName)
-            : base(message)
-        {
-            ProviderName = providerName;
-        }
-
-        public CryptoProviderNotFoundException(string message, string providerName, Exception innerException)
-            : base(message, innerException)
+            : base(string.Format(FormatMessage, providerName))
         {
             ProviderName = providerName;
         }

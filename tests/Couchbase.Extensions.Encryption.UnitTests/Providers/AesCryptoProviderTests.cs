@@ -65,7 +65,6 @@ namespace Couchbase.Extensions.Encryption.UnitTests.Providers
             Assert.Equal(decryptedText, textBytes);
         }
 
-
         [Fact]
         public void Test_Authenticate()
         {
@@ -137,6 +136,68 @@ namespace Couchbase.Extensions.Encryption.UnitTests.Providers
 
             _output.WriteLine("authkey: " + Convert.ToBase64String(Encoding.UTF8.GetBytes(_keystore.GetKey("myauthsecret"))));
             _output.WriteLine("sig: " + Convert.ToBase64String(aesCryptoProvider.GetSignature(encryptedBytes)));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void When_SecretKeyName_Is_Null_Throw_CryptoProviderMissingSigningKeyException(string value)
+        {
+            var aesCryptoProvider = new AesCryptoProvider
+            {
+                KeyStore = _keystore,
+                PublicKeyName = "mypublickey",
+                SigningKeyName = value
+            };
+
+            Assert.Throws<CryptoProviderMissingSigningKeyException>(()=>aesCryptoProvider.GetSignature(new byte[]{}));
+        }
+
+        [Theory]
+        [InlineData("MyBadKeyNull")]
+        [InlineData("MyBadKeyToSmall")]
+        [InlineData("MyBadKeyToLarge")]
+        [InlineData("MyBadKeyBarelyTooSmall")]
+        public void Encrypt_When_KeySize_Is_Not_256b_Throw_CryptoProviderKeySizeException(string keyName)
+        {
+            var keyStore = new InsecureKeyStore();
+            keyStore.StoreKey("MyBadKeyToSmall", "1");
+            keyStore.StoreKey("MyBadKeyNull", null);
+            keyStore.StoreKey("MyBadKeyToLarge", "!mysecretkey#9^5usdk39d&dlf)03sLd");
+            keyStore.StoreKey("MyBadKeyBarelyTooSmall", "!mysecretkey#9^5usdk39d&dlf)03s");
+            keyStore.StoreKey("myauthsecret", "myauthpassword");
+
+            var aesCryptoProvider = new AesCryptoProvider
+            {
+                KeyStore = keyStore,
+                PublicKeyName = keyName,
+                SigningKeyName = "myauthsecret"
+            };
+            Assert.Throws<CryptoProviderKeySizeException>(() => aesCryptoProvider.Encrypt(null, out byte[] iv));
+        }
+
+        [Theory]
+        [InlineData("MyBadKeyNull")]
+        [InlineData("MyBadKeyToSmall")]
+        [InlineData("MyBadKeyToLarge")]
+        [InlineData("MyBadKeyBarelyTooSmall")]
+        public void Decrypt_When_KeySize_Is_Not_256b_Throw_CryptoProviderKeySizeException(string keyName)
+        {
+            var keyStore = new InsecureKeyStore();
+            keyStore.StoreKey("MyBadKeyToSmall", "1");
+            keyStore.StoreKey("MyBadKeyNull", null);
+            keyStore.StoreKey("MyBadKeyToLarge", "!mysecretkey#9^5usdk39d&dlf)03sLd");
+            keyStore.StoreKey("MyBadKeyBarelyTooSmall", "!mysecretkey#9^5usdk39d&dlf)03s");
+            keyStore.StoreKey("myauthsecret", "myauthpassword");
+
+            var aesCryptoProvider = new AesCryptoProvider
+            {
+                KeyStore = keyStore,
+                PublicKeyName = keyName,
+                SigningKeyName = "myauthsecret"
+            };
+            Assert.Throws<CryptoProviderKeySizeException>(() => aesCryptoProvider.Decrypt(null, new byte[]{}));
         }
     }
 }

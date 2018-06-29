@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.Security.Cryptography;
 
 namespace Couchbase.Extensions.Encryption
 {
@@ -12,8 +13,13 @@ namespace Couchbase.Extensions.Encryption
 
         public virtual byte[] GetSignature(byte[] cipherBytes)
         {
+            if (string.IsNullOrWhiteSpace(SigningKeyName))
+            {
+                throw new CryptoProviderMissingSigningKeyException(ProviderName);
+            }
             var password = KeyStore.GetKey(SigningKeyName);
             var passwordBytes = System.Text.Encoding.UTF8.GetBytes(password);
+
             using (var hmac = new HMACSHA256(passwordBytes))
             {
                 return hmac.ComputeHash(cipherBytes);

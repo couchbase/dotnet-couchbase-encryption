@@ -6,15 +6,25 @@ using Couchbase.Configuration.Client;
 using Couchbase.Extensions.Encryption.Providers;
 using Couchbase.Extensions.Encryption.Stores;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Couchbase.Extensions.Encryption.IntegrationTests
 {
     public class AesFieldEncryptionTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public AesFieldEncryptionTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+
+
         [Fact]
         public void Test_Encrypt_String()
         {
             var key = "!mysecretkey#9^5usdk39d&dlf)03sL";
+            _output.WriteLine((key.Length*8).ToString());
 
             var config = new ClientConfiguration(TestConfiguration.GetConfiguration());
             config.EnableFieldEncryption(new KeyValuePair<string, ICryptoProvider>("MyProvider",

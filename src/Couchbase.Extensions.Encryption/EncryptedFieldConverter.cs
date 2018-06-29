@@ -34,98 +34,119 @@ namespace Couchbase.Extensions.Encryption
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             var rawJson = JsonConvert.SerializeObject(value, SerializerSettings);
-            var cryptoProvider = CryptoProviders[ProviderName];
+
+            if (!CryptoProviders.TryGetValue(ProviderName, out var cryptoProvider))
+            {
+                throw new CryptoProviderNotFoundException(ProviderName);
+            }
 
             var rawBytes = Encoding.UTF8.GetBytes(rawJson);
-            var cipherText = cryptoProvider.Encrypt(rawBytes, out var iv);
-            var base64CipherText = Convert.ToBase64String(cipherText);
-
-            string base64Iv = null;
-            if (iv != null)
+            try
             {
-                base64Iv = Convert.ToBase64String(iv);
-            }
+                var cipherText = cryptoProvider.Encrypt(rawBytes, out var iv);
+                var base64CipherText = Convert.ToBase64String(cipherText);
 
-            byte[] signatureBytes = null;
-            if (cryptoProvider.RequiresAuthentication)
+                byte[] signatureBytes = null;
+                if (cryptoProvider.RequiresAuthentication)
+                {
+                    //sig = HMAC256(BASE64(kid + alg + iv + ciphertext))
+                    var kidBytes = Encoding.UTF8.GetBytes(cryptoProvider.PublicKeyName);
+                    var algBytes = Encoding.UTF8.GetBytes(cryptoProvider.AlgorithmName);
+                    var buffer = new byte[kidBytes.Length + algBytes.Length + iv.Length + cipherText.Length];
+
+                    Buffer.BlockCopy(kidBytes, 0, buffer, 0, kidBytes.Length);
+                    Buffer.BlockCopy(algBytes, 0, buffer, kidBytes.Length, algBytes.Length);
+                    Buffer.BlockCopy(iv, 0, buffer, kidBytes.Length + algBytes.Length, iv.Length);
+                    Buffer.BlockCopy(cipherText, 0, buffer, kidBytes.Length + algBytes.Length + iv.Length, cipherText.Length);
+
+                    //sign the entire buffer
+                    signatureBytes = cryptoProvider.GetSignature(buffer);
+                }
+
+                var token = new JObject(
+                    new JProperty("alg", cryptoProvider.AlgorithmName),
+                    new JProperty("kid", cryptoProvider.PublicKeyName),
+                    new JProperty("ciphertext", base64CipherText));
+
+                if (signatureBytes != null)
+                {
+                    var base64Sig = Convert.ToBase64String(signatureBytes);
+                    token.Add("sig", base64Sig);
+                }
+
+                if (iv != null)
+                {
+                    token.Add("iv", Convert.ToBase64String(iv));
+                }
+
+                token.WriteTo(writer);
+            }
+            catch (Exception e)
             {
-                //sig = HMAC256(BASE64(kid + alg + iv + ciphertext))
-                var kidBytes = Encoding.UTF8.GetBytes(cryptoProvider.PublicKeyName);
-                var algBytes = Encoding.UTF8.GetBytes(cryptoProvider.AlgorithmName);
-                var buffer = new byte[kidBytes.Length + algBytes.Length + iv.Length + cipherText.Length];
-
-                Buffer.BlockCopy(kidBytes, 0, buffer, 0, kidBytes.Length);
-                Buffer.BlockCopy(algBytes, 0, buffer, kidBytes.Length, algBytes.Length);
-                Buffer.BlockCopy(iv, 0, buffer, kidBytes.Length + algBytes.Length, iv.Length);
-                Buffer.BlockCopy(cipherText, 0, buffer, kidBytes.Length + algBytes.Length + iv.Length, cipherText.Length);
-
-                //sign the entire buffer
-                signatureBytes = cryptoProvider.GetSignature(buffer);
+                throw new CryptoProviderEncryptFailedException(ProviderName, e);
             }
-
-            var token = new JObject(
-                new JProperty("alg", cryptoProvider.AlgorithmName),
-                new JProperty("kid", cryptoProvider.PublicKeyName),
-                new JProperty("ciphertext", base64CipherText));
-
-            if (signatureBytes != null)
-            {
-                var base64Sig = Convert.ToBase64String(signatureBytes);
-                token.Add("sig", base64Sig);
-            }
-            if (iv != null && !string.IsNullOrWhiteSpace(base64Iv))
-            {
-                token.Add("iv", base64Iv);
-            }
-
-            token.WriteTo(writer);
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null) return null;
 
-            var encryptedFields = (JObject)JToken.ReadFrom(reader);
-            var alg = encryptedFields.SelectToken("alg");
-            var kid = encryptedFields.SelectToken("kid");
-            var cipherText = encryptedFields.SelectToken("ciphertext");
-            var iv = encryptedFields.SelectToken("iv");
-            var signature = encryptedFields.SelectToken("sig");
-
-            var cryptoProvider = CryptoProviders[ProviderName];
-
-            var cipherBytes = Convert.FromBase64String(cipherText.Value<string>());
-            byte[] ivBytes = null;
-            if (iv != null)
+            try
             {
-                ivBytes = Convert.FromBase64String(iv.Value<string>());
-            }
+                var encryptedFields = (JObject) JToken.ReadFrom(reader);
+                var alg = encryptedFields.SelectToken("alg");
+                var kid = encryptedFields.SelectToken("kid");
+                var cipherText = encryptedFields.SelectToken("ciphertext");
+                var iv = encryptedFields.SelectToken("iv");
+                var signature = encryptedFields.SelectToken("sig");
 
-            if (signature != null && ivBytes != null)
-            {
-                //sig = BASE64(HMAC256(alg + BASE64(iv) + BASE64(ciphertext)))
-                var kidBytes = Encoding.UTF8.GetBytes(kid.Value<string>());
-                var algBytes = Encoding.UTF8.GetBytes(alg.Value<string>());
-
-                var buffer = new byte[kidBytes.Length + algBytes.Length + ivBytes.Length + cipherBytes.Length];
-                Buffer.BlockCopy(kidBytes, 0, buffer, 0, kidBytes.Length);
-                Buffer.BlockCopy(algBytes, 0, buffer, kidBytes.Length, algBytes.Length);
-                Buffer.BlockCopy(ivBytes, 0, buffer, kidBytes.Length + algBytes.Length, ivBytes.Length);
-                Buffer.BlockCopy(cipherBytes, 0, buffer, kidBytes.Length + algBytes.Length+ ivBytes.Length, cipherBytes.Length);
-
-                var sig = cryptoProvider.GetSignature(buffer);
-                if (signature.Value<string>() != Convert.ToBase64String(sig))
+                if (!CryptoProviders.TryGetValue(ProviderName, out var cryptoProvider))
                 {
-                    throw new AuthenticationException("signatures do not match!");
+                    throw new CryptoProviderNotFoundException(ProviderName);
                 }
+
+                var cipherBytes = Convert.FromBase64String(cipherText.Value<string>());
+                byte[] ivBytes = null;
+                if (iv != null)
+                {
+                    ivBytes = Convert.FromBase64String(iv.Value<string>());
+                }
+
+                if (signature != null && ivBytes != null)
+                {
+                    //sig = BASE64(HMAC256(alg + BASE64(iv) + BASE64(ciphertext)))
+                    var kidBytes = Encoding.UTF8.GetBytes(kid.Value<string>());
+                    var algBytes = Encoding.UTF8.GetBytes(alg.Value<string>());
+
+                    var buffer = new byte[kidBytes.Length + algBytes.Length + ivBytes.Length + cipherBytes.Length];
+                    Buffer.BlockCopy(kidBytes, 0, buffer, 0, kidBytes.Length);
+                    Buffer.BlockCopy(algBytes, 0, buffer, kidBytes.Length, algBytes.Length);
+                    Buffer.BlockCopy(ivBytes, 0, buffer, kidBytes.Length + algBytes.Length, ivBytes.Length);
+                    Buffer.BlockCopy(cipherBytes, 0, buffer, kidBytes.Length + algBytes.Length + ivBytes.Length,
+                        cipherBytes.Length);
+
+                    var sig = cryptoProvider.GetSignature(buffer);
+                    if (signature.Value<string>() != Convert.ToBase64String(sig))
+                    {
+                        throw new CryptoProviderSigningFailedException(ProviderName);
+                    }
+                }
+
+                byte[] decryptedPayload = null;
+                decryptedPayload = cryptoProvider.PrivateKeyName == null
+                    ? cryptoProvider.Decrypt(cipherBytes, ivBytes, kid.Value<string>())
+                    : cryptoProvider.Decrypt(cipherBytes, ivBytes);
+
+                return ConvertToType(Encoding.UTF8.GetString(decryptedPayload));
             }
-
-            byte[] decryptedPayload = null;
-            decryptedPayload = cryptoProvider.PrivateKeyName == null ?
-                cryptoProvider.Decrypt(cipherBytes, ivBytes, kid.Value<string>()) :
-                cryptoProvider.Decrypt(cipherBytes, ivBytes);
-
-            return ConvertToType(Encoding.UTF8.GetString(decryptedPayload));
+            catch (CryptoProviderSigningFailedException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new CryptoProviderDecryptFailedException(ProviderName, e);
+            }
         }
 
         public override bool CanConvert(Type objectType)

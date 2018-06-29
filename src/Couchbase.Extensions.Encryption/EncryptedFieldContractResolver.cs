@@ -12,7 +12,8 @@ namespace Couchbase.Extensions.Encryption
     {
         public EncryptedFieldContractResolver(Dictionary<string, ICryptoProvider> cryptoProviders)
         {
-            CryptoProviders = cryptoProviders;
+            CryptoProviders = cryptoProviders ?? throw new ArgumentNullException(nameof(cryptoProviders));
+            if (!CryptoProviders.Any()) throw new ArgumentOutOfRangeException(nameof(cryptoProviders));
             EncryptedFieldPrefix = "__crypt_";
         }
 
@@ -34,13 +35,7 @@ namespace Couchbase.Extensions.Encryption
             {
                 if (attribute.Provider == null)
                 {
-                    if (CryptoProviders == null || CryptoProviders.Count == 0)
-                    {
-                        throw new ArgumentException("A CryptoProvider must be configured.");
-                    }
-
-                    //assign the default provider if none is supplied
-                    attribute.Provider = CryptoProviders.First().Key;
+                    throw new CryptoProviderAliasNullException();
                 }
 
                 var propertyInfo = member as PropertyInfo;

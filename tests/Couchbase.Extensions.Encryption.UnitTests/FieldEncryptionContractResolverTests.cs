@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using Couchbase.Extensions.Encryption.Providers;
 using Couchbase.Extensions.Encryption.Stores;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,38 +22,48 @@ namespace Couchbase.Extensions.Encryption.UnitTests
         }
 
         [Fact]
-        public void When_No_CryptoProviders_Configured_Throw_ArgumentException()
+        public void When_No_CryptoProviders_Configured_Throw_ArgumentOutOfRangeException()
         {
             var cryptoProviders = new Dictionary<string, ICryptoProvider>
             {
                 //uh oh
             };
 
-            var settings = new JsonSerializerSettings
-            {
-                ContractResolver = new EncryptedFieldContractResolver(cryptoProviders)
-            };
-
-            var pocoPlain = new Poco2 { Foo = new List<int> { 3, 4, 5 } };
-
-            Assert.Throws<ArgumentException>(() =>
-            {
-                var result = JsonConvert.SerializeObject(pocoPlain, settings);
-                return result;
-            });
+            Assert.Throws<ArgumentOutOfRangeException>(() => new EncryptedFieldContractResolver(cryptoProviders));
         }
 
         [Fact]
-        public void When_CryptoProviders_Are_Null_Throw_ArgumentException()
+        public void When_CryptoProviders_Is_Null_Throw_ArgumentNullException()
         {
+            Assert.Throws<ArgumentNullException>(() => new EncryptedFieldContractResolver(null));
+        }
+
+        [Fact]
+        public void When_Alias_Does_Not_Match_Configured_CryptoProvider_Throw_CryptoProviderNotFoundException()
+        {
+            var cryptoProviders = new Dictionary<string, ICryptoProvider>
+            {
+                {
+                    "IDONTMATCH!", new AesCryptoProvider(new InsecureKeyStore(
+                        new KeyValuePair<string, string>("publickey", "!mysecretkey#9^5usdk39d&dlf)03sL"),
+                        new KeyValuePair<string, string>("myauthsecret", "mysecret")))
+                    {
+                        PublicKeyName = "publickey",
+                        SigningKeyName = "myauthsecret"
+                    }
+                }
+            };
+            ITraceWriter traceWriter = new MemoryTraceWriter();
+
             var settings = new JsonSerializerSettings
             {
-                ContractResolver = new EncryptedFieldContractResolver(null)
+                ContractResolver = new EncryptedFieldContractResolver(cryptoProviders),
+                TraceWriter = traceWriter
             };
 
-            var pocoPlain = new Poco2 { Foo = new List<int> { 3, 4, 5 } };
+            var pocoPlain = new Poco3 {Foo = 2, Bar="bar"};
 
-            Assert.Throws<ArgumentException>(() => JsonConvert.SerializeObject(pocoPlain, settings));
+            Assert.Throws<CryptoProviderNotFoundException>(() => JsonConvert.SerializeObject(pocoPlain, settings));
         }
 
         [Fact]
@@ -135,7 +147,7 @@ namespace Couchbase.Extensions.Encryption.UnitTests
             var cryptoProviders = new Dictionary<string, ICryptoProvider>
             {
                 {
-                    "AES-256-HMAC-SHA256", new AesCryptoProvider(new InsecureKeyStore(
+                    "AesProvider", new AesCryptoProvider(new InsecureKeyStore(
                         new KeyValuePair<string, string>("publickey", "!mysecretkey#9^5usdk39d&dlf)03sL"),
                         new KeyValuePair<string, string>("myauthsecret", "mysecret")))
                     {
@@ -151,28 +163,35 @@ namespace Couchbase.Extensions.Encryption.UnitTests
             };
         }
 
+        public class Poco3
+        {
+            [EncryptedField(Provider = "AesProvider")]
+            public string Bar { get; set; }
+            public int Foo { get; set; }
+        }
+
         public class Poco
         {
-            [EncryptedField(Provider = "AES-256-HMAC-SHA256")]
+            [EncryptedField(Provider = "AesProvider")]
             public string Bar { get; set; }
             public int Foo { get; set; }
         }
 
         public class Poco1
         {
-            [EncryptedField(Provider = "AES-256-HMAC-SHA256")]
+            [EncryptedField(Provider = "AesProvider")]
             public int Foo { get; set; }
         }
 
         public class Poco2
         {
-            [EncryptedField]
+            [EncryptedField(Provider = "AesProvider")]
             public List<int> Foo { get; set; }
         }
 
         public class PocoWithChildObject
         {
-            [EncryptedField(Provider = "AES-256-HMAC-SHA256")]
+            [EncryptedField(Provider = "AesProvider")]
             public ChildObject Foo { get; set; }
         }
 
