@@ -9,7 +9,7 @@ namespace Couchbase.Extensions.Encryption.Providers
     /// </summary>
     public class RsaCryptoProvider : CryptoProviderBase
     {
-#if NET45
+#if NET452
         private const bool UseOaepPadding = true;
 #endif
 
