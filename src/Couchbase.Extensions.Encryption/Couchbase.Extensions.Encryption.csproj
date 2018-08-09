@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <PackageId>Couchbase.Extensions.Encryption</PackageId>
@@ -14,7 +14,7 @@
     <PackageIconUrl>https://raw.githubusercontent.com/couchbaselabs/Linq2Couchbase/master/Packaging/couchbase-logo.png</PackageIconUrl>
     <PackageReleaseNotes></PackageReleaseNotes>
 
-    <TargetFrameworks>net45;netstandard1.5;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net452;netstandard1.5;netstandard2.0</TargetFrameworks>
     <RootNamespace>Couchbase.Extensions.Encryption</RootNamespace>
     <AssemblyName>Couchbase.Extensions.Encryption</AssemblyName>
     <NetStandardImplicitPackageVersion>2.0.1</NetStandardImplicitPackageVersion>
@@ -28,8 +28,8 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <DefineConstants>$(DefineConstants);NET45</DefineConstants>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net452' ">
+    <DefineConstants>TRACE;DEBUG;NET452</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
     <DefineConstants>$(DefineConstants);NETSTANDARD;NETSTANDARD15</DefineConstants>
@@ -40,10 +40,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CouchbaseNetClient" Version="2.6.0-beta" />
+    <PackageReference Include="CouchbaseNetClient" Version="2.6.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Reference Include="System.Security" />
     <Reference Include="System.Reflection.Extensions" />
   </ItemGroup>
