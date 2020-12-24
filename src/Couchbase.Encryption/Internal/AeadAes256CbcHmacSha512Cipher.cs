@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Couchbase.Encryption.Internal
 {
@@ -32,6 +29,40 @@ namespace Couchbase.Encryption.Internal
                 Padding = PaddingMode.PKCS7,
                 Mode = CipherMode.CBC
             };
+        }
+
+        public byte[] Decrypt(byte[] key, byte[] cipherText, byte[] associatedData)
+        {
+            var macKey = new Span<byte>(key).Slice(0, 32);
+            var encKey = new Span<byte>(key).Slice(32, 32);
+
+            var authTagOffset = cipherText.Length - AuthTagLength;
+            var enc = cipherText.AsSpan(0, authTagOffset);
+            var authTag = cipherText.AsSpan(authTagOffset, AuthTagLength);
+
+            var associatedDataLengthInBits = BitConverter.GetBytes(associatedData.Length * 8L);
+            var computedMac = HmacSha512(macKey.ToArray(), associatedData, enc.ToArray(), associatedDataLengthInBits);
+            var computedMacAuthTag = new Span<byte>(computedMac).Slice(0, AuthTagLength).ToArray();
+
+            if (!VerifyIntegrity(macKey.ToArray(), authTag.ToArray(), computedMacAuthTag))
+            {
+                throw new CryptographicException("Failed to authenticate the cipherText and associated data.");
+            }
+
+            return DecryptAesCbcPkcs7(encKey.ToArray(), enc.ToArray());
+        }
+
+        private bool VerifyIntegrity(byte[] key, byte[] authTag, byte[] computedMacAuthTag)
+        {
+            return HmacSha512(key, authTag) == computedMacAuthTag;
+        }
+
+        private byte[] DecryptAesCbcPkcs7(byte[] key, byte[] cipherText)
+        {
+            var iv = new Span<byte>(cipherText).Slice(0, IvLength).ToArray();
+
+            using var decryptor = _aesCryptoProvider.CreateDecryptor(key, iv);
+            return decryptor.TransformFinalBlock(cipherText.ToArray(), IvLength, cipherText.Length - IvLength);
         }
 
         public byte[] Encrypt(byte[] key, byte[] plaintext, byte[] associatedData)
