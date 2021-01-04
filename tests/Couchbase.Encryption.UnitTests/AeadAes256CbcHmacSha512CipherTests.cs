@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Security.Cryptography;
+using Couchbase.Encryption.Errors;
 using Couchbase.Encryption.Internal;
 using Xunit;
 
@@ -56,6 +58,64 @@ namespace Couchbase.Encryption.UnitTests
             var actualPlainText = cipherWithFixedIv.Decrypt(Key, CipherText, AssociatedData);
 
             Assert.Equal(Plaintext, actualPlainText);
+        }
+
+        [Fact]
+        public void Test_AssociatedDataCanBeEmpty()
+        {
+            var emptyByteArray = Array.Empty<byte>();
+            var cipherWithFixedIv = new AeadAes256CbcHmacSha512Cipher(new FakeRandomNumberGenerator(emptyByteArray));
+            var cipherText = cipherWithFixedIv.Encrypt(Key, Plaintext, emptyByteArray);
+            var roundTripPlainText = new AeadAes256CbcHmacSha512Cipher().Decrypt(Key, cipherText, emptyByteArray);
+
+            Assert.Equal(Plaintext, roundTripPlainText);
+        }
+
+        [Fact]
+        public void Test_WorksWithRealIvGenerator()
+        {
+            var cipherWithRandomIv = new AeadAes256CbcHmacSha512Cipher();
+            var cipherText = cipherWithRandomIv.Encrypt(Key, Plaintext, AssociatedData);
+            var roundTripPlainText = cipherWithRandomIv.Decrypt(Key, cipherText, AssociatedData);
+
+            Assert.Equal(Plaintext, roundTripPlainText);
+        }
+
+        [Fact]
+        public void Test_DecryptBadAssociatedData()
+        {
+            var cipherWithFixedIv = new AeadAes256CbcHmacSha512Cipher(new FakeRandomNumberGenerator(Iv));
+            var bogusAssociatedData = (byte[])AssociatedData.Clone();
+            bogusAssociatedData[0]++;
+
+            Assert.Throws<InvalidCiphertextException>(() => cipherWithFixedIv.Decrypt(Key, CipherText, bogusAssociatedData));
+        }
+
+        [Fact]
+        public void Test_DecryptBadCipherText()
+        {
+            var cipherWithFixedIv = new AeadAes256CbcHmacSha512Cipher(new FakeRandomNumberGenerator(Iv));
+            var bogusCipherText = (byte[]) CipherText.Clone();
+            bogusCipherText[0]++;
+
+            Assert.Throws<InvalidCiphertextException>(() => cipherWithFixedIv.Decrypt(Key, bogusCipherText, AssociatedData));
+        }
+
+        [Fact]
+        public void Test_DecryptBadKeySize()
+        {
+            var cipherWithFixedIv = new AeadAes256CbcHmacSha512Cipher(new FakeRandomNumberGenerator(Iv));
+
+            Assert.Throws<InvalidCryptoKeyException>(() => cipherWithFixedIv.Decrypt(new byte[0], CipherText, AssociatedData));
+        }
+
+
+        [Fact]
+        public void Test_EncryptBadKeySize()
+        {
+            var cipherWithFixedIv = new AeadAes256CbcHmacSha512Cipher(new FakeRandomNumberGenerator(Iv));
+
+            Assert.Throws<InvalidCryptoKeyException>(() => cipherWithFixedIv.Encrypt(new byte[0], CipherText, AssociatedData));
         }
 
         private static byte[] StringToByteArray(string hex)

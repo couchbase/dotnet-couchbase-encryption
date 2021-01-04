@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
+using Couchbase.Encryption.Errors;
 
 namespace Couchbase.Encryption.Internal
 {
@@ -10,9 +13,8 @@ namespace Couchbase.Encryption.Internal
         private static int IvLength = 16;
         private static int AuthTagLength = 32;
 
-        private HMACSHA512 _hmacsha512;
-        private AesCryptoServiceProvider _aesCryptoProvider;
-        private IRandomNumberGenerator _randomNumberGenerator;
+        private readonly AesCryptoServiceProvider _aesCryptoProvider;
+        private readonly IRandomNumberGenerator _randomNumberGenerator;
 
         public AeadAes256CbcHmacSha512Cipher() : this(new DefaultRandomNumberGenerator())
         {
@@ -21,7 +23,6 @@ namespace Couchbase.Encryption.Internal
         public AeadAes256CbcHmacSha512Cipher(IRandomNumberGenerator randomNumberGenerator)
         {
             _randomNumberGenerator = randomNumberGenerator;
-            _hmacsha512 = new HMACSHA512();
             _aesCryptoProvider = new AesCryptoServiceProvider
             {
                 BlockSize = 128,
@@ -33,6 +34,8 @@ namespace Couchbase.Encryption.Internal
 
         public byte[] Decrypt(byte[] key, byte[] cipherText, byte[] associatedData)
         {
+            CheckKeyLength(key);
+
             var macKey = new Span<byte>(key).Slice(0, 32);
             var encKey = new Span<byte>(key).Slice(32, 32);
 
@@ -40,21 +43,29 @@ namespace Couchbase.Encryption.Internal
             var enc = cipherText.AsSpan(0, authTagOffset);
             var authTag = cipherText.AsSpan(authTagOffset, AuthTagLength);
 
-            var associatedDataLengthInBits = BitConverter.GetBytes(associatedData.Length * 8L);
+            var associatedDataLengthInBits = GetDataLengthInBits(associatedData);
             var computedMac = HmacSha512(macKey.ToArray(), associatedData, enc.ToArray(), associatedDataLengthInBits);
             var computedMacAuthTag = new Span<byte>(computedMac).Slice(0, AuthTagLength).ToArray();
 
-            if (!VerifyIntegrity(macKey.ToArray(), authTag.ToArray(), computedMacAuthTag))
+            if (!VerifyIntegrity(authTag.ToArray(), computedMacAuthTag))
             {
-                throw new CryptographicException("Failed to authenticate the cipherText and associated data.");
+                throw new InvalidCiphertextException("Failed to authenticate the cipherText and associated data.");
             }
 
             return DecryptAesCbcPkcs7(encKey.ToArray(), enc.ToArray());
         }
 
-        private bool VerifyIntegrity(byte[] key, byte[] authTag, byte[] computedMacAuthTag)
+        private bool VerifyIntegrity(byte[] authTag, byte[] computedMacAuthTag)
         {
-            return HmacSha512(key, authTag) == computedMacAuthTag;
+            if (authTag.Length != computedMacAuthTag.Length) return false;
+
+            var result = 0;
+            for (var i = 0; i < authTag.Length; i++)
+            {
+                result |= authTag[i] ^ computedMacAuthTag[i];
+            }
+
+            return result == 0;
         }
 
         private byte[] DecryptAesCbcPkcs7(byte[] key, byte[] cipherText)
@@ -67,11 +78,13 @@ namespace Couchbase.Encryption.Internal
 
         public byte[] Encrypt(byte[] key, byte[] plaintext, byte[] associatedData)
         {
+            CheckKeyLength(key);
+
             var macKey = new Span<byte>(key).Slice(0, 32);
             var encKey = new Span<byte>(key).Slice(32, 32);
 
             var enc = EncryptAesCbcPkcs7(encKey, plaintext);
-            var associatedDataLengthInBits = BitConverter.GetBytes(associatedData.Length * 8L);
+            var associatedDataLengthInBits = GetDataLengthInBits(associatedData);
             var computedMac = HmacSha512(macKey.ToArray(), associatedData, enc, associatedDataLengthInBits);
             var authTag = new Span<byte>(computedMac).Slice(0, AuthTagLength).ToArray();
 
@@ -93,12 +106,24 @@ namespace Couchbase.Encryption.Internal
             return Concat(iv.ToArray(), ms.ToArray());
         }
 
+        private void CheckKeyLength(byte[] key)
+        {
+            if(key.Length != 64) throw new InvalidCryptoKeyException($"Expected key to be 64 bytes but got {key.Length} bytes.");
+        }
+
         private byte[] Concat(byte[] first, byte[] second)
         {
             var destination = new byte[first.Length + second.Length];
             Buffer.BlockCopy(first, 0, destination, 0, first.Length);
             Buffer.BlockCopy(second, 0, destination, first.Length, second.Length);
             return destination;
+        }
+
+        //this may not be needed with non-unit test data
+        private byte[] GetDataLengthInBits(byte[] bytes)
+        {
+            var length = BitConverter.GetBytes(bytes.Length * 8L);
+            return BitConverter.IsLittleEndian ? length.Reverse().ToArray() : length;
         }
 
         private byte[] HmacSha512(byte[] key, params byte[][] authenticateMe)
