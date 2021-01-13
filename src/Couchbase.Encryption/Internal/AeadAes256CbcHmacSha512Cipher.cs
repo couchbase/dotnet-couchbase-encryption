@@ -8,13 +8,15 @@ using Couchbase.Encryption.Errors;
 
 namespace Couchbase.Encryption.Internal
 {
-    public sealed class AeadAes256CbcHmacSha512Cipher
+    public sealed class AeadAes256CbcHmacSha512Cipher : IEncryptionAlgorithm
     {
         private static int IvLength = 16;
         private static int AuthTagLength = 32;
 
         private readonly AesCryptoServiceProvider _aesCryptoProvider;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
+
+        public string Algorithm => "AEAD_AES_256_CBC_HMAC_SHA512";
 
         public AeadAes256CbcHmacSha512Cipher() : this(new DefaultRandomNumberGenerator())
         {

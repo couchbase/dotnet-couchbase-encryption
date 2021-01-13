@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Couchbase.Encryption
+﻿namespace Couchbase.Encryption
 {
     public class EncryptionResult
     {
+        public string Alg { get; set; }
+
+        public string Kid { get; set; }
+
+        public string CipherText { get; set; }
     }
 }

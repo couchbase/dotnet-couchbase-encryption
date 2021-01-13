@@ -1,0 +1,7 @@
+﻿{
+  "encrypted$maxim": {
+    "alg": "AEAD_AES_256_CBC_HMAC_SHA512",
+    "kid": "test-key",
+    "ciphertext": "GvOMLcK5b/3YZpQJI0G8BLm98oj20ZLdqKDV3MfTuGlWL4R5p5Deykuv2XLW4LcDvnOkmhuUSRbQ8QVEmbjq43XHdOm3ColJ6LzoaAtJihk="
+  }
+}
