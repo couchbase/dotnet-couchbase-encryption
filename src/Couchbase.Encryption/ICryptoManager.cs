@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Couchbase.Encryption
+﻿namespace Couchbase.Encryption
 {
     public interface ICryptoManager
     {
-        EncryptionResult Encrypt(byte[] plaintext, string encryptorAlias);
+        EncryptionResult Encrypt(byte[] plainText, string encrypterAlias);
 
         byte[] Decrypt(EncryptionResult encrypted);
 

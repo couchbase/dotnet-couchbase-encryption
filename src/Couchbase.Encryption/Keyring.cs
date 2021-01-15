@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Couchbase.Encryption
 {
     public class Keyring : IKeyring
     {
-        private IDictionary<string, IKey> _keys;
+        private readonly IDictionary<string, IKey> _keys;
 
-        public Keyring(IDictionary<string, IKey> keys)
+        public Keyring(IEnumerable<IKey> keys)
         {
-            _keys = keys;
+            _keys = keys.ToDictionary(x => x.Id, y => y);
         }
 
         public IKey Get(string keyId)

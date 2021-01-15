@@ -4,12 +4,12 @@ using Couchbase.Encryption.Internal;
 
 namespace Couchbase.Encryption
 {
-    internal class Encryptor : IEncryptor
+    internal class Encrypter : IEncrypter
     {
         private readonly IEncryptionAlgorithm _cipher;
         private readonly IKey _key;
 
-        public Encryptor(IEncryptionAlgorithm cipher, IKey key)
+        public Encrypter(IEncryptionAlgorithm cipher, IKey key)
         {
             _cipher = cipher;
             _key = key;
@@ -23,7 +23,7 @@ namespace Couchbase.Encryption
             return new EncryptionResult
             {
                 Alg = _cipher.Algorithm,
-                CipherText = Encoding.UTF8.GetString(encrypted),
+                CipherText = System.Convert.ToBase64String(encrypted),
                 Kid = _key.Id
             };
         }

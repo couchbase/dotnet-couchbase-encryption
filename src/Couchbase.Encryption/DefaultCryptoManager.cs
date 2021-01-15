@@ -1,69 +1,100 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using Couchbase.Encryption.Errors;
 
 namespace Couchbase.Encryption
 {
     public class DefaultCryptoManager : ICryptoManager
     {
-        private readonly IDictionary<string, IEncryptor> _encryptors;
-        private readonly IDictionary<string, IDecryptor> _decryptors;
+        private readonly IDictionary<string, IEncrypter> _encrypters;
+        private readonly IDictionary<string, IDecrypter> _decrypters;
+        private readonly string _encryptedFieldNamePrefix;
 
-        private static string DefaultEncrypterAlias = "__DEFAULT__";
+        internal static string DefaultEncrypterAlias = "__DEFAULT__";
         private static string DefaultEncryptedFieldNamePrefix = "encrypted$";
 
-        private DefaultCryptoManager(IDictionary<string, IEncryptor> encryptors, IDictionary<string, IDecryptor> decryptors)
+        private DefaultCryptoManager(IDictionary<string, IEncrypter> encrypters, IDictionary<string, IDecrypter> decrypters, string encryptedFieldNamePrefix)
         {
-            _encryptors = encryptors;
-            _decryptors = decryptors;
+            _encrypters = encrypters;
+            _decrypters = decrypters;
+            _encryptedFieldNamePrefix = encryptedFieldNamePrefix;
         }
 
-        public sealed class Builder
+        public sealed class CryptoBuilder
         {
-            private readonly Dictionary<string, IEncryptor> _encryptors = new Dictionary<string, IEncryptor>();
-            private readonly Dictionary<string, IDecryptor> _decryptors = new Dictionary<string, IDecryptor>();
+            private readonly Dictionary<string, IEncrypter> _encrypters = new Dictionary<string, IEncrypter>();
+            private readonly Dictionary<string, IDecrypter> _decrypters = new Dictionary<string, IDecrypter>();
+            private string _encryptedNamePrefix = DefaultEncryptedFieldNamePrefix;
 
-            public Builder Encryptor(string alias, IEncryptor encryptor)
+            public CryptoBuilder Encrypter(string alias, IEncrypter encrypter)
             {
-                if (_encryptors.TryAdd(alias, encryptor)) return this;
-                throw new InvalidOperationException($"Encryptor alias '{alias}' is already associated with {encryptor}");
+                if (_encrypters.TryAdd(alias, encrypter)) return this;
+                throw new InvalidOperationException($"Encrypter alias '{alias}' is already associated with {encrypter}");
             }
 
-            public Builder Decryptor(IDecryptor decryptor)
+            public CryptoBuilder Decrypter(IDecrypter decrypter)
             {
-                if (_decryptors.TryAdd(decryptor.Algorithm, decryptor)) return this;
-                throw new InvalidOperationException($"Encryptor alias '{decryptor.Algorithm}' is already associated with {decryptor}");
+                if (_decrypters.TryAdd(decrypter.Algorithm, decrypter)) return this;
+                throw new InvalidOperationException($"Encrypter alias '{decrypter.Algorithm}' is already associated with {decrypter}");
+            }
+
+            public CryptoBuilder DefaultEncryptor(IEncrypter encrypter)
+            {
+                return Encrypter(DefaultEncrypterAlias, encrypter);
+            }
+
+            public CryptoBuilder EncryptedFieldNamePrefix(string encryptedFieldNamePrefix)
+            {
+                if(string.IsNullOrWhiteSpace(encryptedFieldNamePrefix)) throw new ArgumentNullException(nameof(encryptedFieldNamePrefix));
+                _encryptedNamePrefix = encryptedFieldNamePrefix;
+                return this;
             }
 
             public DefaultCryptoManager Build()
             {
-                return new DefaultCryptoManager(_encryptors, _decryptors);
+                return new DefaultCryptoManager(_encrypters, _decrypters, _encryptedNamePrefix);
             }
         }
 
-        public EncryptionResult Encrypt(byte[] plaintext, string encryptorAlias)
+        public static CryptoBuilder Builder()
         {
-            throw new NotImplementedException();
+            return new CryptoBuilder();
+        }
+
+        public EncryptionResult Encrypt(byte[] plainText, string encrypterAlias = null)
+        {
+            var alias = encrypterAlias ?? DefaultEncrypterAlias;
+            if(_encrypters.TryGetValue(alias, out var encrypter))
+            {
+                return encrypter.Encrypt(plainText);
+            }
+
+            throw EncrypterNotFoundException.Create(encrypterAlias);
         }
 
         public byte[] Decrypt(EncryptionResult encrypted)
         {
-            throw new NotImplementedException();
+            if (_decrypters.TryGetValue(encrypted.Alg, out var decrypter))
+            {
+                return decrypter.Decrypt(encrypted);
+            }
+
+            throw DecrypterNotFoundException.Create(encrypted.Kid);
         }
 
         public string Mangle(string fieldName)
         {
-            throw new NotImplementedException();
+            return string.Concat(_encryptedFieldNamePrefix, fieldName);
         }
 
         public string Demangle(string fieldName)
         {
-            throw new NotImplementedException();
+            return fieldName.Replace(_encryptedFieldNamePrefix, "", StringComparison.InvariantCultureIgnoreCase);
         }
 
         public bool IsMangled(string fieldName)
         {
-            throw new NotImplementedException();
+            return fieldName.StartsWith(_encryptedFieldNamePrefix);
         }
     }
 }

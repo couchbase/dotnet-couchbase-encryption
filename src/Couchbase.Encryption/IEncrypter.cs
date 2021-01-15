@@ -2,7 +2,7 @@
 
 namespace Couchbase.Encryption
 {
-    public interface IEncryptor
+    public interface IEncrypter
     {
         EncryptionResult Encrypt(byte[] plaintext);
     }
