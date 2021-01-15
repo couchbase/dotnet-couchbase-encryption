@@ -3,15 +3,15 @@ using Couchbase.Encryption.Internal;
 
 namespace Couchbase.Encryption
 {
-    internal class Decryptor : IDecryptor
+    internal class Decrypter : IDecrypter
     {
         private readonly IEncryptionAlgorithm _cipher;
-        private readonly IKey _key;
+        private readonly IKeyring _keyring;
 
-        public Decryptor(IEncryptionAlgorithm cipher, IKey key)
+        public Decrypter(IEncryptionAlgorithm cipher, IKeyring keyring)
         {
             _cipher = cipher;
-            _key = key;
+            _keyring = keyring;
         }
 
         internal byte[] AssociatedData { get; set; }
@@ -20,8 +20,9 @@ namespace Couchbase.Encryption
 
         public byte[] Decrypt(EncryptionResult encrypted)
         {
-            var cipherBytes = Encoding.UTF8.GetBytes(encrypted.CipherText);
-            var plainBytes = _cipher.Decrypt(_key.Bytes, cipherBytes, AssociatedData);
+            var key = _keyring.GetOrThrow(encrypted.Kid);
+            var cipherBytes = System.Convert.FromBase64String(encrypted.CipherText);
+            var plainBytes = _cipher.Decrypt(key.Bytes, cipherBytes, AssociatedData);
             return plainBytes;
         }
     }

@@ -1,6 +1,6 @@
 ﻿namespace Couchbase.Encryption
 {
-    public interface IDecryptor
+    public interface IDecrypter
     {
         string Algorithm { get; }
 
