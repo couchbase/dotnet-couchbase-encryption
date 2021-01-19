@@ -1,19 +1,19 @@
-﻿using Couchbase.Encryption.Internal;
+﻿using System;
 
-namespace Couchbase.Encryption
+namespace Couchbase.Encryption.Internal
 {
-    internal class Decrypter : IDecrypter
+    internal class LegacyAesDecrypter : IDecrypter
     {
         private readonly IEncryptionAlgorithm _cipher;
         private readonly IKeyring _keyring;
 
-        public Decrypter(IEncryptionAlgorithm cipher, IKeyring keyring)
+        public LegacyAesDecrypter(IKeyring keyring, IEncryptionAlgorithm cipher)
         {
-            _cipher = cipher;
             _keyring = keyring;
+            _cipher = cipher;
         }
 
-        internal byte[] AssociatedData { get; set; }
+        internal byte[] AssociatedData => new byte[0];
 
         public string Algorithm => _cipher.Algorithm;
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using Couchbase.Encryption.Internal;
 
 namespace Couchbase.Encryption
@@ -23,7 +22,7 @@ namespace Couchbase.Encryption
             return new EncryptionResult
             {
                 Alg = _cipher.Algorithm,
-                CipherText = System.Convert.ToBase64String(encrypted),
+                Ciphertext = Convert.ToBase64String(encrypted),
                 Kid = _key.Id
             };
         }

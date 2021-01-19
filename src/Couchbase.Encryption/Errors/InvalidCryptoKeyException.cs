@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Security.Cryptography;
 
 namespace Couchbase.Encryption.Errors
 {
     /// <summary>
     /// Thrown if the encryption key length is not 64 bytes.
     /// </summary>
-    public sealed class InvalidCryptoKeyException : CryptographicException
+    public sealed class InvalidCryptoKeyException : CouchbaseException
     {
         public InvalidCryptoKeyException(string message) : base(message)
         {

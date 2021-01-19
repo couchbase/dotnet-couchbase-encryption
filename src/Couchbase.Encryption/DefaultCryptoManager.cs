@@ -38,7 +38,7 @@ namespace Couchbase.Encryption
                 throw new InvalidOperationException($"Encrypter alias '{decrypter.Algorithm}' is already associated with {decrypter}");
             }
 
-            public CryptoBuilder DefaultEncryptor(IEncrypter encrypter)
+            public CryptoBuilder DefaultEncrypter(IEncrypter encrypter)
             {
                 return Encrypter(DefaultEncrypterAlias, encrypter);
             }

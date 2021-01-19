@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using Couchbase.Encryption.Internal;
+﻿using Couchbase.Encryption.Internal;
 
 namespace Couchbase.Encryption
 {
@@ -8,7 +7,7 @@ namespace Couchbase.Encryption
         private readonly IEncryptionAlgorithm _cipher;
         private readonly IKeyring _keyring;
 
-        private static readonly byte[] NoAssociatedData = new byte[0];
+        private static readonly byte[] NoAssociatedData = System.Array.Empty<byte>();
 
         public AeadAes256CbcHmacSha512Provider(IEncryptionAlgorithm cipher, IKeyring keyring)
         {
@@ -16,7 +15,7 @@ namespace Couchbase.Encryption
             _keyring = keyring;
         }
 
-        public IEncrypter Encryptor(string keyId)
+        public IEncrypter Encrypter(string keyId)
         {
             return new Encrypter(_cipher, _keyring.Get(keyId))
             {
@@ -24,7 +23,7 @@ namespace Couchbase.Encryption
             };
         }
 
-        public IDecrypter Decryptor()
+        public IDecrypter Decrypter()
         {
             return new Decrypter(_cipher, _keyring)
             {

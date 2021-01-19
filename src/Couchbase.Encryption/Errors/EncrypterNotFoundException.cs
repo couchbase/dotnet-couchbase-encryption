@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Security.Cryptography;
 
 namespace Couchbase.Encryption.Errors
 {
-    public class EncrypterNotFoundException : CryptographicException
+    public sealed class EncrypterNotFoundException : CouchbaseException
     {
         public EncrypterNotFoundException(string alias, string message) : base(message)
         {
