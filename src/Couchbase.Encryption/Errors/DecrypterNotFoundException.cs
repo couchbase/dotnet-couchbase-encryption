@@ -1,9 +1,6 @@
-﻿using System;
-using System.Security.Cryptography;
-
-namespace Couchbase.Encryption.Errors
+﻿namespace Couchbase.Encryption.Errors
 {
-    public class DecrypterNotFoundException : CryptographicException
+    public sealed class DecrypterNotFoundException : CouchbaseException
     {
         public DecrypterNotFoundException(string algorithm, string message) : base(message)
         {

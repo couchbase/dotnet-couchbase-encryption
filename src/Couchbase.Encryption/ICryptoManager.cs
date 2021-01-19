@@ -2,7 +2,7 @@
 {
     public interface ICryptoManager
     {
-        EncryptionResult Encrypt(byte[] plainText, string encrypterAlias);
+        EncryptionResult Encrypt(byte[] plainText, string encrypterAlias = null);
 
         byte[] Decrypt(EncryptionResult encrypted);
 
