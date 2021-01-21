@@ -12,6 +12,8 @@ namespace Couchbase.Encryption
         private string _kid;
         private string _ciphertext;
 
+        internal byte[] Iv { get; set; }
+
         public string Alg
         {
             get => _alg;

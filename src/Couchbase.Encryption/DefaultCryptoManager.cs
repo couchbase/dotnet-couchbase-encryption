@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Couchbase.Encryption.Errors;
+using Couchbase.Encryption.Internal;
 
 namespace Couchbase.Encryption
 {
@@ -35,7 +36,7 @@ namespace Couchbase.Encryption
             public CryptoBuilder Decrypter(IDecrypter decrypter)
             {
                 if (_decrypters.TryAdd(decrypter.Algorithm, decrypter)) return this;
-                throw new InvalidOperationException($"Encrypter alias '{decrypter.Algorithm}' is already associated with {decrypter}");
+                throw new InvalidOperationException($"Decrypter alias '{decrypter.Algorithm}' is already associated with {decrypter}");
             }
 
             public CryptoBuilder DefaultEncrypter(IEncrypter encrypter)
@@ -48,6 +49,15 @@ namespace Couchbase.Encryption
                 if(string.IsNullOrWhiteSpace(encryptedFieldNamePrefix)) throw new ArgumentNullException(nameof(encryptedFieldNamePrefix));
                 _encryptedNamePrefix = encryptedFieldNamePrefix;
                 return this;
+            }
+
+            public CryptoBuilder LegacyAesDecrypters(Keyring keyring, string keyName, string signingKeyName)
+            {
+                var legacyAesDecrypter = new LegacyAesDecrypter(keyring, new LegacyAes256CbcHmacSha256Cipher());
+                var legacyHmacEncrypter = new LegacyHmac256Encrypter(new LegacyHmac256Cipher(), keyring, signingKeyName);
+                if (_decrypters.TryAdd(keyName, legacyAesDecrypter) && _encrypters.TryAdd(signingKeyName, legacyHmacEncrypter)) return this;
+
+                throw new InvalidOperationException($"Decrypter keyName '{keyName}' is already associated with {legacyAesDecrypter.Algorithm}");
             }
 
             public DefaultCryptoManager Build()
@@ -74,7 +84,7 @@ namespace Couchbase.Encryption
 
         public byte[] Decrypt(EncryptionResult encrypted)
         {
-            if (_decrypters.TryGetValue(encrypted.Alg, out var decrypter))
+            if (_decrypters.TryGetValue(encrypted.Kid, out var decrypter))
             {
                 return decrypter.Decrypt(encrypted);
             }
