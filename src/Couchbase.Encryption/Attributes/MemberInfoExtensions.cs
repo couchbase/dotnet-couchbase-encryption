@@ -7,11 +7,11 @@ namespace Couchbase.Encryption.Attributes
     {
         public static bool GetEncryptedFieldAttribute(this MemberInfo methodInfo, out EncryptedFieldAttribute attribute)
         {
-#if NETSTANDARD15
+//#if NETSTANDARD15
             attribute = methodInfo.GetCustomAttribute<EncryptedFieldAttribute>();
             return attribute != null;
-#else
-            if (Attribute.IsDefined(methodInfo, typeof(EncryptedFieldAttribute)))
+//#else
+            /*if (Attribute.IsDefined(methodInfo, typeof(EncryptedFieldAttribute)))
             {
                 attribute = (EncryptedFieldAttribute)Attribute.
                     GetCustomAttribute(methodInfo, typeof(EncryptedFieldAttribute));
@@ -20,7 +20,7 @@ namespace Couchbase.Encryption.Attributes
             }
             attribute = null;
             return false;
-#endif
+#endif*/
         }
     }
 }

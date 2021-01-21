@@ -28,7 +28,7 @@ namespace Couchbase.Encryption.Attributes
                 var propertyInfo = member as PropertyInfo;
                 result.PropertyName = _cryptoManager.Mangle(result.PropertyName);
 
-                result.Converter = new EncryptedFieldConverter(propertyInfo, _cryptoManager, attribute.KeyName);
+                result.Converter = new EncryptedFieldConverter(propertyInfo, _cryptoManager, attribute.KeyName, attribute.LegacySigningKeyName);
             }
 
             return result;
