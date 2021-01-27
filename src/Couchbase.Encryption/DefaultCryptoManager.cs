@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Couchbase.Encryption.Errors;
 using Couchbase.Encryption.Internal;
+using Couchbase.Encryption.Legacy;
 
 namespace Couchbase.Encryption
 {
@@ -51,13 +52,13 @@ namespace Couchbase.Encryption
                 return this;
             }
 
-            public CryptoBuilder LegacyAesDecrypters(Keyring keyring, string keyName, string signingKeyName)
+            public CryptoBuilder LegacyAesDecrypters(Keyring keyring, string signingKeyName)
             {
                 var legacyAesDecrypter = new LegacyAesDecrypter(keyring, new LegacyAes256CbcHmacSha256Cipher());
                 var legacyHmacEncrypter = new LegacyHmac256Encrypter(new LegacyHmac256Cipher(), keyring, signingKeyName);
-                if (_decrypters.TryAdd(keyName, legacyAesDecrypter) && _encrypters.TryAdd(signingKeyName, legacyHmacEncrypter)) return this;
+                if (_decrypters.TryAdd(legacyAesDecrypter.Algorithm, legacyAesDecrypter) && _encrypters.TryAdd(signingKeyName, legacyHmacEncrypter)) return this;
 
-                throw new InvalidOperationException($"Decrypter keyName '{keyName}' is already associated with {legacyAesDecrypter.Algorithm}");
+                throw new InvalidOperationException($"Decrypter algorithm '{legacyAesDecrypter.Algorithm}' is already associated with {legacyAesDecrypter.Algorithm}");
             }
 
             public DefaultCryptoManager Build()
@@ -84,7 +85,7 @@ namespace Couchbase.Encryption
 
         public byte[] Decrypt(EncryptionResult encrypted)
         {
-            if (_decrypters.TryGetValue(encrypted.Kid, out var decrypter))
+            if (_decrypters.TryGetValue(encrypted.Alg, out var decrypter))
             {
                 return decrypter.Decrypt(encrypted);
             }

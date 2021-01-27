@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Couchbase.Encryption\Couchbase.Encryption.csproj" />
+    <ProjectReference Include="..\Couchbase.Encryption.IntegrationTests\Couchbase.Encryption.IntegrationTests.csproj" />
   </ItemGroup>
 
 </Project>

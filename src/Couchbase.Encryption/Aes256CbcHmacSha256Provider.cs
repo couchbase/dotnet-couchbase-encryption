@@ -1,4 +1,5 @@
 ﻿using Couchbase.Encryption.Internal;
+using Couchbase.Encryption.Legacy;
 
 namespace Couchbase.Encryption
 {

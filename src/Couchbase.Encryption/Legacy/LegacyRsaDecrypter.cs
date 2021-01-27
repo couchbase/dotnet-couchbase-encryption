@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Security.Cryptography;
+using Couchbase.Encryption.Internal;
 
-namespace Couchbase.Encryption.Internal
+namespace Couchbase.Encryption.Legacy
 {
     internal class LegacyRsaDecrypter : CryptoProviderBase
     {

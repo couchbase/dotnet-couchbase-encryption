@@ -1,4 +1,6 @@
-﻿namespace Couchbase.Encryption.Internal
+﻿using Couchbase.Encryption.Internal;
+
+namespace Couchbase.Encryption.Legacy
 {
     internal class LegacyAesDecrypter : IDecrypter
     {

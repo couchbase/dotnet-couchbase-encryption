@@ -1,7 +1,4 @@
-﻿using System.Net.WebSockets;
-using System.Text;
-using System.Text.Unicode;
-using Xunit;
+﻿using Xunit;
 
 namespace Couchbase.Encryption.UnitTests
 {

@@ -12,15 +12,13 @@ namespace Couchbase.Encryption.Attributes
     {
         private readonly PropertyInfo _propertyInfo;
         private readonly ICryptoManager _cryptoManager;
-        private readonly string _keyName;
         private readonly string _legacySigningKeyName;
         private static string NonLegacyAlgorithim = "AEAD_AES_256_CBC_HMAC_SHA512";
 
-        public EncryptedFieldConverter(PropertyInfo propertyInfo, ICryptoManager cryptoManager, string keyName, string legacySigningKeyName)
+        public EncryptedFieldConverter(PropertyInfo propertyInfo, ICryptoManager cryptoManager, string legacySigningKeyName)
         {
             _propertyInfo = propertyInfo;
             _cryptoManager = cryptoManager;
-            _keyName = keyName;
             _legacySigningKeyName = legacySigningKeyName;
             SerializerSettings =
                 new JsonSerializerSettings
@@ -40,7 +38,7 @@ namespace Couchbase.Encryption.Attributes
             var rawJson = JsonConvert.SerializeObject(value, SerializerSettings);
             var plainText = Encoding.UTF8.GetBytes(rawJson);
 
-            var encryptionResult = _cryptoManager.Encrypt(plainText, _keyName);
+            var encryptionResult = _cryptoManager.Encrypt(plainText);
             var token = encryptionResult.ToJObject();
 
             token.WriteTo(writer);
@@ -65,7 +63,28 @@ namespace Couchbase.Encryption.Attributes
 
         public override bool CanConvert(Type objectType)
         {
-            return true;
+            var typeCode = Type.GetTypeCode(_propertyInfo.PropertyType);
+            return typeCode switch
+            {
+                TypeCode.Boolean => true,
+                TypeCode.Byte => true,
+                TypeCode.Char => true,
+                TypeCode.DateTime => true,
+                TypeCode.Decimal => true,
+                TypeCode.Double => true,
+                TypeCode.Empty => true,
+                TypeCode.Int16 => true,
+                TypeCode.Int32 => true,
+                TypeCode.Int64 => true,
+                TypeCode.Object => true,
+                TypeCode.SByte => true,
+                TypeCode.Single => true,
+                TypeCode.String => true,
+                TypeCode.UInt16 => true,
+                TypeCode.UInt32 => true,
+                TypeCode.UInt64 => true,
+                _ => false
+            };
         }
 
         private object ConvertToType(string decryptedValue)
@@ -90,7 +109,7 @@ namespace Couchbase.Encryption.Attributes
                 TypeCode.UInt16 => JsonConvert.DeserializeObject<ushort>(decryptedValue),
                 TypeCode.UInt32 => JsonConvert.DeserializeObject<uint>(decryptedValue),
                 TypeCode.UInt64 => JsonConvert.DeserializeObject<ulong>(decryptedValue),
-                _ => null
+                _ => throw new NotSupportedException($"The decrypted value type '{typeCode}` is a non-supported type.")
             };
         }
     }

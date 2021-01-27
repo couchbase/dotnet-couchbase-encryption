@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
+using Couchbase.Encryption.Internal;
 
-namespace Couchbase.Encryption.Internal
+namespace Couchbase.Encryption.Legacy
 {
     internal class LegacyAes256CbcHmacSha256Cipher : IEncryptionAlgorithm
     {

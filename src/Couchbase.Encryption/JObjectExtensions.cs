@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography;
 using System.Text;
 using Couchbase.Encryption.Errors;
 using Newtonsoft.Json.Linq;
@@ -17,8 +16,16 @@ namespace Couchbase.Encryption
             var iv = encrypted.SelectToken("iv").Value<string>();
             var kid = encrypted.SelectToken("kid").Value<string>();
 
-            var signMe = kid + alg + iv + ciphertext;
-            var buffer = Encoding.UTF8.GetBytes(signMe);
+            var kidBytes = Encoding.UTF8.GetBytes(kid);
+            var algBytes = Encoding.UTF8.GetBytes(alg);
+            var ivBytes = Convert.FromBase64String(iv);
+            var cipherBytes = Convert.FromBase64String(ciphertext);
+
+            var buffer = new byte[kidBytes.Length + algBytes.Length + ivBytes.Length + cipherBytes.Length];
+            Buffer.BlockCopy(kidBytes, 0, buffer, 0, kidBytes.Length);
+            Buffer.BlockCopy(algBytes, 0, buffer, kidBytes.Length, algBytes.Length);
+            Buffer.BlockCopy(ivBytes, 0, buffer, kidBytes.Length + algBytes.Length, ivBytes.Length);
+            Buffer.BlockCopy(cipherBytes, 0, buffer, kidBytes.Length + algBytes.Length + ivBytes.Length, cipherBytes.Length);
 
             var signature = cryptoManager.Encrypt(buffer, signingKeyName);
             if (sig != signature.Ciphertext) throw new DecryptionFailureException();

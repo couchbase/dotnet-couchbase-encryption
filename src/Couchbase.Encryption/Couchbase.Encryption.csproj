@@ -6,7 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Internal\Legacy\ClientConfigurationExtensions.cs" />
+    <Compile Remove="Internal\Legacy\**" />
+    <EmbeddedResource Remove="Internal\Legacy\**" />
+    <None Remove="Internal\Legacy\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,10 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\couchbase-net-client\src\Couchbase\Couchbase.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Internal\Legacy\" />
   </ItemGroup>
 
 </Project>
