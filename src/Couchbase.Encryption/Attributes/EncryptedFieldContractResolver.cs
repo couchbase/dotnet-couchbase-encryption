@@ -18,7 +18,7 @@ namespace Couchbase.Encryption.Attributes
         {
             var result = base.CreateProperty(member, memberSerialization);
 
-            if (member.GetEncryptedFieldAttribute(out var attribute))
+            if (member.TryGetEncryptedFieldAttribute(out var attribute))
             {
                 if (attribute.KeyName == null)
                 {
