@@ -13,8 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Encryption.UnitTe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Encryption", "src\Couchbase.Encryption\Couchbase.Encryption.csproj", "{BBC8AC9B-797F-4500-82BD-63ACF56E3E87}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase", "..\couchbase-net-client\src\Couchbase\Couchbase.csproj", "{ABAC0BF0-FB5C-4A84-A5C9-E06AFF797085}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,10 +31,6 @@ Global
 		{BBC8AC9B-797F-4500-82BD-63ACF56E3E87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BBC8AC9B-797F-4500-82BD-63ACF56E3E87}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BBC8AC9B-797F-4500-82BD-63ACF56E3E87}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ABAC0BF0-FB5C-4A84-A5C9-E06AFF797085}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ABAC0BF0-FB5C-4A84-A5C9-E06AFF797085}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ABAC0BF0-FB5C-4A84-A5C9-E06AFF797085}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ABAC0BF0-FB5C-4A84-A5C9-E06AFF797085}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
