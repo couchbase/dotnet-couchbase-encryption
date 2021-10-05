@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <PrivateAssets>all</PrivateAssets>
@@ -17,6 +17,18 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Couchbase.Encryption\Couchbase.Encryption.csproj" />
     <ProjectReference Include="..\Couchbase.Encryption.IntegrationTests\Couchbase.Encryption.IntegrationTests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Docs\poco-rsa.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Docs\rsa-private.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Docs\rsa-public.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

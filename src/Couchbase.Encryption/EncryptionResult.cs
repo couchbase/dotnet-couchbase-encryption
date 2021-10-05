@@ -46,19 +46,19 @@ namespace Couchbase.Encryption
 
         public JObject ToJObject()
         {
-            return new JObject(
-                new JProperty("alg", Alg),
-                new JProperty("kid", Kid),
-                new JProperty("ciphertext", Ciphertext));
+            return new(
+                new JProperty(EncryptionField.Algorithm, Alg),
+                new JProperty(EncryptionField.KeyIdentifier, Kid),
+                new JProperty(EncryptionField.CipherText, Ciphertext));
         }
 
         public static EncryptionResult FromJObject(JObject jObject)
         {
-            return new EncryptionResult
+            return new()
             {
-                Alg = jObject.SelectToken("alg").Value<string>(),
-                Kid = jObject.SelectToken("kid").Value<string>(),
-                Ciphertext = jObject.SelectToken("ciphertext").Value<string>()
+                Alg = jObject.SelectToken(EncryptionField.Algorithm).Value<string>(),
+                Kid = jObject.SelectToken(EncryptionField.KeyIdentifier).Value<string>(),
+                Ciphertext = jObject.SelectToken(EncryptionField.CipherText).Value<string>()
             };
         }
 

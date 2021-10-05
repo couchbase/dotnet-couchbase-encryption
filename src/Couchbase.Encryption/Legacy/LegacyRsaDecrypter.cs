@@ -3,18 +3,25 @@ using Couchbase.Encryption.Internal;
 
 namespace Couchbase.Encryption.Legacy
 {
-    internal class LegacyRsaDecrypter : CryptoProviderBase
+    internal class LegacyRsaDecrypter : IDecrypter
     {
-        public override byte[] Decrypt(byte[] key, byte[] encryptedBytes, byte[] iv, string keyName = null)
+        private readonly IEncryptionAlgorithm _cipher;
+        private readonly IKeyring _keyring;
+
+        public LegacyRsaDecrypter(IKeyring keyring, IEncryptionAlgorithm cipher)
         {
-            throw new NotImplementedException();
+            _keyring = keyring;
+            _cipher = cipher;
         }
 
-        public override byte[] Encrypt(byte[] key, byte[] plainBytes, out byte[] iv)
-        {
-            throw new NotImplementedException();
-        }
+        public string Algorithm => _cipher.Algorithm;
 
-        public override bool RequiresAuthentication { get; }
+        public byte[] Decrypt(EncryptionResult encrypted)
+        {
+            var key = _keyring.GetOrThrow(encrypted.Kid);
+            var cipherBytes = Convert.FromBase64String(encrypted.Ciphertext);
+            var plainBytes = _cipher.Decrypt(key.Bytes, cipherBytes, encrypted.Iv);
+            return plainBytes;
+        }
     }
 }

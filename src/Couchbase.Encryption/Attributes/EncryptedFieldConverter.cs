@@ -52,7 +52,7 @@ namespace Couchbase.Encryption.Attributes
             if (encryptedJObject.Value<string>("alg") != NonLegacyAlgorithim)
             {
                 //decrypt using the legacy algorithm - will upgrade on write back
-                var legacyPlainText = encryptedJObject.Decrypt(_legacySigningKeyName, _cryptoManager);
+                var legacyPlainText = encryptedJObject.Decrypt(_cryptoManager, _legacySigningKeyName);
                 return ConvertToType(Encoding.UTF8.GetString(legacyPlainText));
             }
 

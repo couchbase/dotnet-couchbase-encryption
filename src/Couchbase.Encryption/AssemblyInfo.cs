@@ -17,3 +17,4 @@ using System.Runtime.InteropServices;
 
 [assembly: Guid("84610b84-2019-4e27-a1d9-87e3c933a1ee")]
 [assembly: InternalsVisibleTo("Couchbase.Encryption.IntegrationTests")]
+[assembly: InternalsVisibleTo("Couchbase.Encryption.UnitTests")]

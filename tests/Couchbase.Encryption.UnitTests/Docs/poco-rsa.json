@@ -1,0 +1,28 @@
+﻿{
+  "__crypt_bar": {
+    "alg": "RSA-2048-OAEP-SHA1",
+    "kid": "MyKeyName",
+    "ciphertext": "GzIeKQRh4hK5oV+IHzsN8UGeSGChvzxuwxHzX4fV0jnVccOfVomWSNFzAuSdKwxU1Dg7Gm878+HqyGmgGR+YTCXNqdHVctdBxertddJZSQlRvhOy3EFkJIEsp6+Whyv6LQE4HkHEfQznlP3fNpsV5IlScDC/91nLuwy6HIdoUIk="
+  },
+  "__crypt_foo": {
+    "alg": "RSA-2048-OAEP-SHA1",
+    "kid": "MyKeyName",
+    "ciphertext": "i0vtQtlNSCOnrHrBwMrnXyboqSOtMmySXLYzNEoaqCcnTTJPfRn4NzyrEVhiEfWnKFsc+bj7rZKF3A1dYpnosbyK1xrdHIy0WptyY257XeEhpA9BgvrLV6ktFp4XqmpRMJph55dG+FZ7NV9naxcCH+KdZ9NEuEwTVpGjTR0THy8="
+  },
+  "__crypt_baz": {
+    "alg": "RSA-2048-OAEP-SHA1",
+    "kid": "MyKeyName",
+    "ciphertext": "S1CTZSw4I0dVrMzZ9gxM/OE4JHJCBCa0HuTpfAjn5Glorx5IFLcCAJgBSsvrhwzw+Vr3hsAL56l+i611d0Q6RRPNmYqdB+iDy42QtngUALmKC6PPMkRh4TaiGdq8KHsEVz/dEJ3HmnsUhE3n2h/gghDT9xLDd6URIznE87W2AI8="
+  },
+  "__crypt_childObject": {
+    "alg": "RSA-2048-OAEP-SHA1",
+    "kid": "MyKeyName",
+    "ciphertext": "Lz2g05gwDyxUoRq4yO7oLtq8UBUPzJPGs1EIJi3LA/RJWSyMwq29inSHUBm+VH4V7aWkt+5vHIebkJIuHQBcpgXiw222NXNMKXDFiUVV1EvHTv8IVTpUSPwrTUzQiLOxPYvAAMka2D+1XPO+eVy4v25c6rC1TGz/Vq3UC2/QHPg="
+  },
+  "__crypt_faz": {
+    "alg": "RSA-2048-OAEP-SHA1",
+    "kid": "MyKeyName",
+    "ciphertext": "MqICQrUqrh9QdWSFOxpSFPgLr5d5wE2hsXC1qL5FjlLLPCxxDEg2CK5MglChvp4YJK7vKl14et2lVYSABwIN6yV7o3Epn99Khn4DT+swVaRl1OSbwUiSR3WiKdlexyAQK+DuIDLAXCXdOgX3fe05xKEZx69QjvvjGncOZLORxFc="
+  },
+  "fizz": "fizz"
+}

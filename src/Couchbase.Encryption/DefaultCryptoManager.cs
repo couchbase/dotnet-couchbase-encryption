@@ -24,8 +24,8 @@ namespace Couchbase.Encryption
 
         public sealed class CryptoBuilder
         {
-            private readonly Dictionary<string, IEncrypter> _encrypters = new Dictionary<string, IEncrypter>();
-            private readonly Dictionary<string, IDecrypter> _decrypters = new Dictionary<string, IDecrypter>();
+            private readonly Dictionary<string, IEncrypter> _encrypters = new();
+            private readonly Dictionary<string, IDecrypter> _decrypters = new();
             private string _encryptedNamePrefix = DefaultEncryptedFieldNamePrefix;
 
             public CryptoBuilder Encrypter(string alias, IEncrypter encrypter)
@@ -59,6 +59,14 @@ namespace Couchbase.Encryption
                 if (_decrypters.TryAdd(legacyAesDecrypter.Algorithm, legacyAesDecrypter) && _encrypters.TryAdd(signingKeyName, legacyHmacEncrypter)) return this;
 
                 throw new InvalidOperationException($"Decrypter algorithm '{legacyAesDecrypter.Algorithm}' is already associated with {legacyAesDecrypter.Algorithm}");
+            }
+
+            public CryptoBuilder LegacyRsaDecrypter(Keyring keyring, string signingKeyName)
+            {
+                var legacyRsaDecrypter = new LegacyRsaDecrypter(keyring, new LegacyRsaCipher());
+                if (_decrypters.TryAdd(legacyRsaDecrypter.Algorithm, legacyRsaDecrypter)) return this;
+
+                throw new InvalidOperationException($"Decrypter algorithm '{legacyRsaDecrypter.Algorithm}' is already associated with {legacyRsaDecrypter.Algorithm}");
             }
 
             public DefaultCryptoManager Build()
