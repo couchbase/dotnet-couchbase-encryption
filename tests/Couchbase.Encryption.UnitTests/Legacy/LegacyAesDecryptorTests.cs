@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Couchbase.Encryption.UnitTests.Legacy
 {
-    public class LegacyAesDecrypterTests
+    public class LegacyAesDecryptorTests
     {
         [Fact]
         public void Test_Upgrade_With_Attributes()
@@ -28,8 +28,8 @@ namespace Couchbase.Encryption.UnitTests.Legacy
             var provider = new AeadAes256CbcHmacSha512Provider(new AeadAes256CbcHmacSha512Cipher(), keyring);
             var cryptoManager = DefaultCryptoManager.Builder()
                 .LegacyAesDecrypters(keyring, "hmacKey")
-                .DefaultEncrypter(provider.Encrypter("upgrade-key"))
-                .Decrypter(provider.Decrypter())
+                .DefaultEncryptor(provider.Encryptor("upgrade-key"))
+                .Decryptor(provider.Decryptor())
                 .Build();
 
             //We will need separate settings for deserialize and serialize so that the prefix is correctly applied
@@ -71,8 +71,8 @@ namespace Couchbase.Encryption.UnitTests.Legacy
             var provider = new AeadAes256CbcHmacSha512Provider(new AeadAes256CbcHmacSha512Cipher(), keyring);
             var cryptoManager = DefaultCryptoManager.Builder()
                 .LegacyAesDecrypters(keyring, "hmacKey")
-                .DefaultEncrypter(provider.Encrypter("upgrade-key"))
-                .Decrypter(provider.Decrypter())
+                .DefaultEncryptor(provider.Encryptor("upgrade-key"))
+                .Decryptor(provider.Decryptor())
                 .Build();
 
             var jsonObject = JObject.Parse(legacyJson);

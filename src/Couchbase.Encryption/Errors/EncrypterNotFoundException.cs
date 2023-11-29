@@ -14,9 +14,9 @@ namespace Couchbase.Encryption.Errors
         public static EncrypterNotFoundException Create(string alias)
         {
             return new EncrypterNotFoundException(alias,
-                DefaultCryptoManager.DefaultEncrypterAlias.Equals(alias, StringComparison.InvariantCultureIgnoreCase)
-                    ? "No default encrypter was registered. Please specify an encrypter or register a default encrypter."
-                    : $"Missing encrypter for alias '{alias}'.");
+                DefaultCryptoManager.DefaultEncryptorAlias.Equals(alias, StringComparison.InvariantCultureIgnoreCase)
+                    ? "No default encryptor was registered. Please specify an encryptor or register a default encryptor."
+                    : $"Missing encryptor for alias '{alias}'.");
         }
     }
 }

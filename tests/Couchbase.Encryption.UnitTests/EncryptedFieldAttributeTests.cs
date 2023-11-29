@@ -29,8 +29,8 @@ namespace Couchbase.Encryption.UnitTests
                 new AeadAes256CbcHmacSha512Provider(
                     new AeadAes256CbcHmacSha512Cipher(new FakeRandomNumberGenerator(Iv)), KeyRing);
             var cryptoManager = DefaultCryptoManager.Builder()
-                .Decrypter(provider.Decrypter())
-                .DefaultEncrypter(provider.Encrypter("test-key"))
+                .Decryptor(provider.Decryptor())
+                .DefaultEncryptor(provider.Encryptor("test-key"))
                 .Build();
 
             return new JsonSerializerSettings

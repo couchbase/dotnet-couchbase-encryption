@@ -22,7 +22,7 @@ namespace Couchbase.Encryption.UnitTests
             {
                 new Key("test-key", GetKey("./Docs/rsa-private.xml"))
             });
-            var rsaDecrypter = new LegacyRsaDecrypter(keyRing, new LegacyRsaCipher());
+            var rsaDecrypter = new LegacyRsaDecryptor(keyRing, new LegacyRsaCipher());
 
             var encrypted = new EncryptionResult
             {

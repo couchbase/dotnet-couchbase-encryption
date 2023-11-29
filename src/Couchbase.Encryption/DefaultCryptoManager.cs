@@ -1,48 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
 using Couchbase.Encryption.Errors;
-using Couchbase.Encryption.Internal;
 using Couchbase.Encryption.Legacy;
 
 namespace Couchbase.Encryption
 {
     public class DefaultCryptoManager : ICryptoManager
     {
-        private readonly IDictionary<string, IEncrypter> _encrypters;
-        private readonly IDictionary<string, IDecrypter> _decrypters;
+        private readonly IDictionary<string, IEncryptor> _encryptors;
+        private readonly IDictionary<string, IDecryptor> _decryptors;
         private readonly string _encryptedFieldNamePrefix;
 
-        internal static string DefaultEncrypterAlias = "__DEFAULT__";
-        private static string DefaultEncryptedFieldNamePrefix = "encrypted$";
+        internal static readonly string DefaultEncryptorAlias = "__DEFAULT__";
+        private const string DefaultEncryptedFieldNamePrefix = "encrypted$";
 
-        private DefaultCryptoManager(IDictionary<string, IEncrypter> encrypters, IDictionary<string, IDecrypter> decrypters, string encryptedFieldNamePrefix)
+        private DefaultCryptoManager(IDictionary<string, IEncryptor> encryptors, IDictionary<string, IDecryptor> decrypters, string encryptedFieldNamePrefix)
         {
-            _encrypters = encrypters;
-            _decrypters = decrypters;
+            _encryptors = encryptors;
+            _decryptors = decrypters;
             _encryptedFieldNamePrefix = encryptedFieldNamePrefix;
         }
 
         public sealed class CryptoBuilder
         {
-            private readonly Dictionary<string, IEncrypter> _encrypters = new();
-            private readonly Dictionary<string, IDecrypter> _decrypters = new();
+            private readonly Dictionary<string, IEncryptor> _encryptors = new();
+            private readonly Dictionary<string, IDecryptor> _decryptors = new();
             private string _encryptedNamePrefix = DefaultEncryptedFieldNamePrefix;
 
-            public CryptoBuilder Encrypter(string alias, IEncrypter encrypter)
+            public CryptoBuilder Encryptor(string alias, IEncryptor encryptor)
             {
-                if (_encrypters.TryAdd(alias, encrypter)) return this;
-                throw new InvalidOperationException($"Encrypter alias '{alias}' is already associated with {encrypter}");
+                if (_encryptors.TryAdd(alias, encryptor)) return this;
+                throw new InvalidOperationException($"Encryptor alias '{alias}' is already associated with {encryptor}");
             }
 
-            public CryptoBuilder Decrypter(IDecrypter decrypter)
+            public CryptoBuilder Decryptor(IDecryptor decryptor)
             {
-                if (_decrypters.TryAdd(decrypter.Algorithm, decrypter)) return this;
-                throw new InvalidOperationException($"Decrypter alias '{decrypter.Algorithm}' is already associated with {decrypter}");
+                if (_decryptors.TryAdd(decryptor.Algorithm, decryptor)) return this;
+                throw new InvalidOperationException($"Decryptor alias '{decryptor.Algorithm}' is already associated with {decryptor}");
             }
 
-            public CryptoBuilder DefaultEncrypter(IEncrypter encrypter)
+            public CryptoBuilder DefaultEncryptor(IEncryptor encryptor)
             {
-                return Encrypter(DefaultEncrypterAlias, encrypter);
+                return Encryptor(DefaultEncryptorAlias, encryptor);
             }
 
             public CryptoBuilder EncryptedFieldNamePrefix(string encryptedFieldNamePrefix)
@@ -54,24 +53,24 @@ namespace Couchbase.Encryption
 
             public CryptoBuilder LegacyAesDecrypters(Keyring keyring, string signingKeyName)
             {
-                var legacyAesDecrypter = new LegacyAesDecrypter(keyring, new LegacyAes256CbcHmacSha256Cipher());
-                var legacyHmacEncrypter = new LegacyHmac256Encrypter(new LegacyHmac256Cipher(), keyring, signingKeyName);
-                if (_decrypters.TryAdd(legacyAesDecrypter.Algorithm, legacyAesDecrypter) && _encrypters.TryAdd(signingKeyName, legacyHmacEncrypter)) return this;
+                var legacyAesDecryptor = new LegacyAesDecryptor(keyring, new LegacyAes256CbcHmacSha256Cipher());
+                var legacyHmacEncryptor = new LegacyHmac256Encryptor(new LegacyHmac256Cipher(), keyring, signingKeyName);
+                if (_decryptors.TryAdd(legacyAesDecryptor.Algorithm, legacyAesDecryptor) && _encryptors.TryAdd(signingKeyName, legacyHmacEncryptor)) return this;
 
-                throw new InvalidOperationException($"Decrypter algorithm '{legacyAesDecrypter.Algorithm}' is already associated with {legacyAesDecrypter.Algorithm}");
+                throw new InvalidOperationException($"Decryptor algorithm '{legacyAesDecryptor.Algorithm}' is already associated with {legacyAesDecryptor.Algorithm}");
             }
 
-            public CryptoBuilder LegacyRsaDecrypter(Keyring keyring, string signingKeyName)
+            public CryptoBuilder LegacyRsaDecryptor(Keyring keyring, string signingKeyName)
             {
-                var legacyRsaDecrypter = new LegacyRsaDecrypter(keyring, new LegacyRsaCipher());
-                if (_decrypters.TryAdd(legacyRsaDecrypter.Algorithm, legacyRsaDecrypter)) return this;
+                var legacyRsaDecryptor = new LegacyRsaDecryptor(keyring, new LegacyRsaCipher());
+                if (_decryptors.TryAdd(legacyRsaDecryptor.Algorithm, legacyRsaDecryptor)) return this;
 
-                throw new InvalidOperationException($"Decrypter algorithm '{legacyRsaDecrypter.Algorithm}' is already associated with {legacyRsaDecrypter.Algorithm}");
+                throw new InvalidOperationException($"Decryptor algorithm '{legacyRsaDecryptor.Algorithm}' is already associated with {legacyRsaDecryptor.Algorithm}");
             }
 
             public DefaultCryptoManager Build()
             {
-                return new DefaultCryptoManager(_encrypters, _decrypters, _encryptedNamePrefix);
+                return new DefaultCryptoManager(_encryptors, _decryptors, _encryptedNamePrefix);
             }
         }
 
@@ -80,22 +79,22 @@ namespace Couchbase.Encryption
             return new CryptoBuilder();
         }
 
-        public EncryptionResult Encrypt(byte[] plainText, string encrypterAlias = null)
+        public EncryptionResult Encrypt(byte[] plainText, string encryptorAlias = null)
         {
-            var alias = encrypterAlias ?? DefaultEncrypterAlias;
-            if(_encrypters.TryGetValue(alias, out var encrypter))
+            var alias = encryptorAlias ?? DefaultEncryptorAlias;
+            if(_encryptors.TryGetValue(alias, out var encryptor))
             {
-                return encrypter.Encrypt(plainText);
+                return encryptor.Encrypt(plainText);
             }
 
-            throw EncrypterNotFoundException.Create(encrypterAlias);
+            throw EncrypterNotFoundException.Create(encryptorAlias);
         }
 
         public byte[] Decrypt(EncryptionResult encrypted)
         {
-            if (_decrypters.TryGetValue(encrypted.Alg, out var decrypter))
+            if (_decryptors.TryGetValue(encrypted.Alg, out var decryptor))
             {
-                return decrypter.Decrypt(encrypted);
+                return decryptor.Decrypt(encrypted);
             }
 
             throw DecrypterNotFoundException.Create(encrypted.Kid);

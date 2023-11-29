@@ -1,28 +1,30 @@
-﻿using Couchbase.Encryption.Internal;
+﻿using System;
+using Couchbase.Encryption.Internal;
 
 namespace Couchbase.Encryption
 {
-    internal class Decrypter : IDecrypter
+    internal class Encryptor : IEncryptor
     {
         private readonly IEncryptionAlgorithm _cipher;
-        private readonly IKeyring _keyring;
+        private readonly IKey _key;
 
-        public Decrypter(IEncryptionAlgorithm cipher, IKeyring keyring)
+        public Encryptor(IEncryptionAlgorithm cipher, IKey key)
         {
             _cipher = cipher;
-            _keyring = keyring;
+            _key = key;
         }
 
-        internal byte[] AssociatedData { get; set; }
+        internal byte[] AssociatedData { get; set; } = Array.Empty<byte>();
 
-        public string Algorithm => _cipher.Algorithm;
-
-        public byte[] Decrypt(EncryptionResult encrypted)
+        public EncryptionResult Encrypt(byte[] plaintext)
         {
-            var key = _keyring.GetOrThrow(encrypted.Kid);
-            var cipherBytes = System.Convert.FromBase64String(encrypted.Ciphertext);
-            var plainBytes = _cipher.Decrypt(key.Bytes, cipherBytes, AssociatedData);
-            return plainBytes;
+            var encrypted = _cipher.Encrypt(_key.Bytes, plaintext, AssociatedData);
+            return new EncryptionResult
+            {
+                Alg = _cipher.Algorithm,
+                Ciphertext = Convert.ToBase64String(encrypted),
+                Kid = _key.Id
+            };
         }
     }
 }

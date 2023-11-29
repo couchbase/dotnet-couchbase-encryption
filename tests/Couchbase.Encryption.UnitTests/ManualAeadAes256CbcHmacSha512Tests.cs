@@ -29,8 +29,8 @@ namespace Couchbase.Encryption.UnitTests
                         new FakeRandomNumberGenerator(Iv)), KeyRing);
 
             return DefaultCryptoManager.Builder()
-                .Decrypter(provider.Decrypter())
-                .DefaultEncrypter(provider.Encrypter("test-key"))
+                .Decryptor(provider.Decryptor())
+                .DefaultEncryptor(provider.Encryptor("test-key"))
                 .Build();
         }
 

@@ -15,17 +15,17 @@ namespace Couchbase.Encryption
             _keyring = keyring;
         }
 
-        public IEncrypter Encrypter(string keyId)
+        public IEncryptor Encryptor(string keyId)
         {
-            return new Encrypter(_cipher, _keyring.Get(keyId))
+            return new Encryptor(_cipher, _keyring.Get(keyId))
             {
                 AssociatedData = NoAssociatedData
             };
         }
 
-        public IDecrypter Decrypter()
+        public IDecryptor Decryptor()
         {
-            return new Decrypter(_cipher, _keyring)
+            return new Decryptor(_cipher, _keyring)
             {
                 AssociatedData = NoAssociatedData
             };

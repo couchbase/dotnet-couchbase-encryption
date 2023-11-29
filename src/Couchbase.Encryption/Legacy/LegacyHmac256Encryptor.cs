@@ -1,26 +1,29 @@
-﻿using Couchbase.Encryption.Internal;
+﻿using System;
 
 namespace Couchbase.Encryption.Legacy
 {
-    internal class LegacyAesDecrypter : IDecrypter
+    internal class LegacyHmac256Encryptor : IEncryptor
     {
-        private readonly IEncryptionAlgorithm _cipher;
+        private readonly LegacyHmac256Cipher _cipher;
         private readonly IKeyring _keyring;
+        private readonly string _signingKeyName;
 
-        public LegacyAesDecrypter(IKeyring keyring, IEncryptionAlgorithm cipher)
+        public LegacyHmac256Encryptor(LegacyHmac256Cipher cipher, IKeyring keyring, string signingKeyName)
         {
-            _keyring = keyring;
             _cipher = cipher;
+            _keyring = keyring;
+            _signingKeyName = signingKeyName;
         }
 
-        public string Algorithm => _cipher.Algorithm;
-
-        public byte[] Decrypt(EncryptionResult encrypted)
+        public EncryptionResult Encrypt(byte[] plaintext)
         {
-            var key = _keyring.GetOrThrow(encrypted.Kid);
-            var cipherBytes = System.Convert.FromBase64String(encrypted.Ciphertext);
-            var plainBytes = _cipher.Decrypt(key.Bytes, cipherBytes, encrypted.Iv);
-            return plainBytes;
+            var key = _keyring.GetOrThrow(_signingKeyName);
+            return new EncryptionResult
+            {
+                Alg = _cipher.Algorithm,
+                Ciphertext = Convert.ToBase64String(_cipher.Encrypt(key.Bytes, plaintext, Array.Empty<byte>())),
+                Kid = _signingKeyName
+            };
         }
     }
 }

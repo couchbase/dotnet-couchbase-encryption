@@ -14,9 +14,9 @@ namespace Couchbase.Encryption
             _cipher = cipher;
         }
 
-        public IDecrypter Decrypter()
+        public IDecryptor Decryptor()
         {
-            return new LegacyAesDecrypter(_keyring, _cipher);
+            return new LegacyAesDecryptor(_keyring, _cipher);
         }
     }
 }

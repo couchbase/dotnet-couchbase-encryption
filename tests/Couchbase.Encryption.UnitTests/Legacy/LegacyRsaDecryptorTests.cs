@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Couchbase.Encryption.UnitTests.Legacy
 {
-    public class LegacyRsaDecrypterTests
+    public class LegacyRsaDecryptorTests
     {
         [Fact]
         public void Test_Upgrade_From_Rsa_To_AeadAes256CbcHmacSha512()
@@ -25,8 +25,8 @@ namespace Couchbase.Encryption.UnitTests.Legacy
                     new AeadAes256CbcHmacSha512Cipher(), keyring);
 
             var cryptoManager = DefaultCryptoManager.Builder()
-                .DefaultEncrypter(provider.Encrypter("upgrade-key"))
-                .LegacyRsaDecrypter(keyring, "MyKeyName")
+                .DefaultEncryptor(provider.Encryptor("upgrade-key"))
+                .LegacyRsaDecryptor(keyring, "MyKeyName")
                 .Build();
 
             var jsonObject = JObject.Parse(File.ReadAllText("./Docs/poco-rsa.json"));

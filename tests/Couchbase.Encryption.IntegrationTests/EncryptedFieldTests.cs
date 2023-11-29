@@ -24,8 +24,8 @@ namespace Couchbase.Encryption.IntegrationTests
                     }));
 
             var cryptoManager = DefaultCryptoManager.Builder()
-                .Decrypter(provider.Decrypter())
-                .DefaultEncrypter(provider.Encrypter("test-key"))
+                .Decryptor(provider.Decryptor())
+                .DefaultEncryptor(provider.Encryptor("test-key"))
                 .Build();
             return cryptoManager;
         }
@@ -71,8 +71,8 @@ namespace Couchbase.Encryption.IntegrationTests
             var provider = new AeadAes256CbcHmacSha512Provider(new AeadAes256CbcHmacSha512Cipher(), keyring);
             var cryptoManager = DefaultCryptoManager.Builder()
                 .LegacyAesDecrypters(keyring, "hmacKey")
-                .DefaultEncrypter(provider.Encrypter("upgrade-key"))
-                .Decrypter(provider.Decrypter())
+                .DefaultEncryptor(provider.Encryptor("upgrade-key"))
+                .Decryptor(provider.Decryptor())
                 .Build();
 
             var encryptedTranscoder = new EncryptedFieldTranscoder(cryptoManager);
@@ -109,8 +109,8 @@ namespace Couchbase.Encryption.IntegrationTests
                     }));
 
             var cryptoManager = DefaultCryptoManager.Builder()
-                .Decrypter(provider.Decrypter())
-                .DefaultEncrypter(provider.Encrypter("test-key"))
+                .Decryptor(provider.Decryptor())
+                .DefaultEncryptor(provider.Encryptor("test-key"))
                 .Build();
 
             var encryptedTranscoder = new EncryptedFieldTranscoder(cryptoManager);
@@ -183,8 +183,8 @@ namespace Couchbase.Encryption.IntegrationTests
                     }));
 
             var cryptoManager = DefaultCryptoManager.Builder()
-                .Decrypter(provider.Decrypter())
-                .DefaultEncrypter(provider.Encrypter("test-key"))
+                .Decryptor(provider.Decryptor())
+                .DefaultEncryptor(provider.Encryptor("test-key"))
                 .Build();
 
             var encryptedTranscoder = new EncryptedFieldTranscoder(cryptoManager);
@@ -267,7 +267,7 @@ namespace Couchbase.Encryption.IntegrationTests
                     .ConfigureAwait(false);
 
                 var val = result.ContentAs<int>();
-                Assert.NotEqual(number, val);
+                Assert.Equal(number, val);
             }
             finally
             {

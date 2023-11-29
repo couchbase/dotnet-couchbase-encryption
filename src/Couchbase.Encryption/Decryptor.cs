@@ -1,10 +1,29 @@
-﻿namespace Couchbase.Encryption
-{
-    public interface IDecrypter
-    {
-        string Algorithm { get; }
+﻿using Couchbase.Encryption.Internal;
 
-        byte[] Decrypt(EncryptionResult encrypted);
+namespace Couchbase.Encryption
+{
+    internal class Decryptor : IDecryptor
+    {
+        private readonly IEncryptionAlgorithm _cipher;
+        private readonly IKeyring _keyring;
+
+        public Decryptor(IEncryptionAlgorithm cipher, IKeyring keyring)
+        {
+            _cipher = cipher;
+            _keyring = keyring;
+        }
+
+        internal byte[] AssociatedData { get; set; }
+
+        public string Algorithm => _cipher.Algorithm;
+
+        public byte[] Decrypt(EncryptionResult encrypted)
+        {
+            var key = _keyring.GetOrThrow(encrypted.Kid);
+            var cipherBytes = System.Convert.FromBase64String(encrypted.Ciphertext);
+            var plainBytes = _cipher.Decrypt(key.Bytes, cipherBytes, AssociatedData);
+            return plainBytes;
+        }
     }
 }
 
