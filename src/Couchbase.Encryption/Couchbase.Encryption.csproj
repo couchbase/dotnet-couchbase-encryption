@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <LangVersion>9</LangVersion>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>10</LangVersion>
     <PackageId>Couchbase.Extensions.Encryption</PackageId>
-    <Version>2.0.0-dp.1</Version>
+    <Version>2.0.0-rc.1</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Description>Attribute based Field level encryption library for the .NET Couchbase SDK. Encrypted fields are protected in transit and at rest. Fields are transparently decrypted when they are retrieved from Couchbase within the application.</Description>
