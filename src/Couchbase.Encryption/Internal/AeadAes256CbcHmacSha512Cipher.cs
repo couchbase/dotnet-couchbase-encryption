@@ -8,10 +8,10 @@ namespace Couchbase.Encryption.Internal
 {
     public sealed class AeadAes256CbcHmacSha512Cipher : IEncryptionAlgorithm
     {
-        private static int IvLength = 16;
-        private static int AuthTagLength = 32;
+        private static readonly int IvLength = 16;
+        private static readonly int AuthTagLength = 32;
 
-        private readonly AesCryptoServiceProvider _aesCryptoProvider;
+        private readonly Aes _aesCryptoProvider;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
 
         public string Algorithm => "AEAD_AES_256_CBC_HMAC_SHA512";
@@ -23,13 +23,11 @@ namespace Couchbase.Encryption.Internal
         public AeadAes256CbcHmacSha512Cipher(IRandomNumberGenerator randomNumberGenerator)
         {
             _randomNumberGenerator = randomNumberGenerator;
-            _aesCryptoProvider = new AesCryptoServiceProvider
-            {
-                BlockSize = 128,
-                KeySize = 256,
-                Padding = PaddingMode.PKCS7,
-                Mode = CipherMode.CBC
-            };
+            _aesCryptoProvider = Aes.Create();
+            _aesCryptoProvider.BlockSize = 128;
+            _aesCryptoProvider.KeySize = 256;
+            _aesCryptoProvider.Padding = PaddingMode.PKCS7;
+            _aesCryptoProvider.Mode = CipherMode.CBC;
         }
 
         public byte[] Decrypt(byte[] key, byte[] cipherText, byte[] associatedData)
