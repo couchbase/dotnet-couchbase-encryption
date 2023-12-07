@@ -14,10 +14,10 @@ namespace Couchbase.Encryption
         internal static readonly string DefaultEncryptorAlias = "__DEFAULT__";
         private const string DefaultEncryptedFieldNamePrefix = "encrypted$";
 
-        private DefaultCryptoManager(IDictionary<string, IEncryptor> encryptors, IDictionary<string, IDecryptor> decrypters, string encryptedFieldNamePrefix)
+        private DefaultCryptoManager(IDictionary<string, IEncryptor> encryptors, IDictionary<string, IDecryptor> decryptors, string encryptedFieldNamePrefix)
         {
             _encryptors = encryptors;
-            _decryptors = decrypters;
+            _decryptors = decryptors;
             _encryptedFieldNamePrefix = encryptedFieldNamePrefix;
         }
 
@@ -51,7 +51,7 @@ namespace Couchbase.Encryption
                 return this;
             }
 
-            public CryptoBuilder LegacyAesDecrypters(Keyring keyring, string signingKeyName)
+            public CryptoBuilder LegacyAesDecryptors(Keyring keyring, string signingKeyName)
             {
                 var legacyAesDecryptor = new LegacyAesDecryptor(keyring, new LegacyAes256CbcHmacSha256Cipher());
                 var legacyHmacEncryptor = new LegacyHmac256Encryptor(new LegacyHmac256Cipher(), keyring, signingKeyName);
@@ -87,7 +87,7 @@ namespace Couchbase.Encryption
                 return encryptor.Encrypt(plainText);
             }
 
-            throw EncrypterNotFoundException.Create(encryptorAlias);
+            throw EncryptorNotFoundException.Create(encryptorAlias);
         }
 
         public byte[] Decrypt(EncryptionResult encrypted)
@@ -97,7 +97,7 @@ namespace Couchbase.Encryption
                 return decryptor.Decrypt(encrypted);
             }
 
-            throw DecrypterNotFoundException.Create(encrypted.Kid);
+            throw DecryptorNotFoundException.Create(encrypted.Kid);
         }
 
         public string Mangle(string fieldName)

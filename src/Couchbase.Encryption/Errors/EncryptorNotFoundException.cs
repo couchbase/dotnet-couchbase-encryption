@@ -1,17 +1,22 @@
-﻿namespace Couchbase.Encryption.Errors
+﻿using System;
+
+namespace Couchbase.Encryption.Errors
 {
-    public sealed class DecrypterNotFoundException : CouchbaseException
+    public sealed class EncryptorNotFoundException : CouchbaseException
     {
-        public DecrypterNotFoundException(string algorithm, string message) : base(message)
+        public EncryptorNotFoundException(string alias, string message) : base(message)
         {
-            Algorithm = algorithm;
+            Alias = alias;
         }
 
-        public string Algorithm { get; }
+        public string Alias { get; }
 
-        public static DecrypterNotFoundException Create(string algorithm)
+        public static EncryptorNotFoundException Create(string alias)
         {
-            return new DecrypterNotFoundException(algorithm, $"Missing decrypter for algorithm '{algorithm}'.");
+            return new EncryptorNotFoundException(alias,
+                DefaultCryptoManager.DefaultEncryptorAlias.Equals(alias, StringComparison.InvariantCultureIgnoreCase)
+                    ? "No default encryptor was registered. Please specify an encryptor or register a default encryptor."
+                    : $"Missing encryptor for alias '{alias}'.");
         }
     }
 }

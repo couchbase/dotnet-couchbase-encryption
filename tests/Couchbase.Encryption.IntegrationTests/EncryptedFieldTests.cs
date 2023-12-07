@@ -70,7 +70,7 @@ namespace Couchbase.Encryption.IntegrationTests
 
             var provider = new AeadAes256CbcHmacSha512Provider(new AeadAes256CbcHmacSha512Cipher(), keyring);
             var cryptoManager = DefaultCryptoManager.Builder()
-                .LegacyAesDecrypters(keyring, "hmacKey")
+                .LegacyAesDecryptors(keyring, "hmacKey")
                 .DefaultEncryptor(provider.Encryptor("upgrade-key"))
                 .Decryptor(provider.Decryptor())
                 .Build();
