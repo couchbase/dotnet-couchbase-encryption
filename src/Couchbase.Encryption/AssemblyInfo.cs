@@ -16,8 +16,12 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM.
 
 [assembly: Guid("84610b84-2019-4e27-a1d9-87e3c933a1ee")]
+
+#if DEBUG
 [assembly: InternalsVisibleTo("Couchbase.Encryption.IntegrationTests")]
 [assembly: InternalsVisibleTo("Couchbase.Encryption.UnitTests")]
+#endif
+
 
 
 /* ************************************************************
