@@ -10,6 +10,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using System.Collections;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Couchbase.Encryption.IntegrationTests
 {
@@ -210,6 +212,66 @@ namespace Couchbase.Encryption.IntegrationTests
 
                 var val = result.ContentAs<Poco>();
                 Assert.NotNull(val);
+            }
+            finally
+            {
+                await collection.RemoveAsync(id).ConfigureAwait(false);
+            }
+        }
+
+        [Fact]
+        public async Task Test_RoundTrip_Multiple_Custom_Encryption_Keys()
+        {
+            var clusterOptions = new ConfigurationBuilder()
+                .AddJsonFile("config.json")
+                .Build()
+                .GetSection("couchbase")
+                .Get<ClusterOptions>();
+
+            var cluster = await Cluster.ConnectAsync(clusterOptions).ConfigureAwait(false);
+            var bucket = await cluster.BucketAsync("default").ConfigureAwait(false);
+            var collection = await bucket.DefaultCollectionAsync().ConfigureAwait(false);
+
+            var id = "KeyTest_" + Guid.NewGuid().ToString()[..6];
+
+            var encryptionKeys = new List<IKey>
+            {
+                new Key("myKey1", FakeKeyGenerator.GetKey(64)),
+                new Key("myKey2", FakeKeyGenerator.GetKey(64)),
+                new Key("myKey3", FakeKeyGenerator.GetKey(64))
+            };
+
+            var provider =
+                new AeadAes256CbcHmacSha512Provider(
+                    new AeadAes256CbcHmacSha512Cipher(), new Keyring(encryptionKeys));
+
+            var cryptoManagerBuilder = DefaultCryptoManager.Builder()
+                .Decryptor(provider.Decryptor());
+
+            encryptionKeys.ForEach(key => cryptoManagerBuilder.Encryptor(key.Id, provider.Encryptor(key.Id)));
+
+            var encryptedTranscoder = new EncryptedFieldTranscoder(cryptoManagerBuilder.Build());
+
+            var poco = new PocoMultipleKeys
+            {
+                Field1 = "field1",
+                Field2 = "field2",
+                Field3 = "field3"
+            };
+
+            await collection.InsertAsync(id, poco, options =>
+                {
+                    options.Transcoder(encryptedTranscoder);
+                    options.Timeout(TimeSpan.FromMinutes(1));
+                })
+                .ConfigureAwait(false);
+
+            try
+            {
+                var result = await collection.GetAsync(id, options => options.Transcoder(encryptedTranscoder))
+                    .ConfigureAwait(false);
+                var val = result.ContentAs<PocoMultipleKeys>();
+                Assert.True(poco.Equals(val));
             }
             finally
             {
@@ -468,6 +530,23 @@ namespace Couchbase.Encryption.IntegrationTests
             public override bool Equals(object? obj)
             {
                 return obj is Poco that && that.Bar == this.Bar && that.Foo == this.Foo;
+            }
+        }
+
+        public class PocoMultipleKeys
+        {
+            [EncryptedField(KeyName = "myKey1")]
+            public string Field1 { get; set; }
+
+            [EncryptedField(KeyName = "myKey2")]
+            public string Field2 { get; set; }
+
+            [EncryptedField(KeyName = "myKey3")]
+            public string Field3 { get; set; }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is PocoMultipleKeys that && that.Field1 == this.Field1 && that.Field2 == this.Field2 && that.Field3 == this.Field3;
             }
         }
     }

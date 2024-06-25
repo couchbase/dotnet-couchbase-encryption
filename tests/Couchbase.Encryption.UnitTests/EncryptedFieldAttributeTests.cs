@@ -30,7 +30,7 @@ namespace Couchbase.Encryption.UnitTests
                     new AeadAes256CbcHmacSha512Cipher(new FakeRandomNumberGenerator(Iv)), KeyRing);
             var cryptoManager = DefaultCryptoManager.Builder()
                 .Decryptor(provider.Decryptor())
-                .DefaultEncryptor(provider.Encryptor("test-key"))
+                .Encryptor("test-key", provider.Encryptor("test-key"))
                 .Build();
 
             return new JsonSerializerSettings
@@ -79,7 +79,8 @@ namespace Couchbase.Encryption.UnitTests
 
     public class Person : IEquatable<Person>
     {
-        [EncryptedField(KeyName = "test-key")] public string Name { get; set; }
+        [EncryptedField(KeyName = "test-key")]
+        public string Name { get; set; }
 
         public int Age { get; set; }
 

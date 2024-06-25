@@ -28,7 +28,7 @@ namespace Couchbase.Encryption.UnitTests.Legacy
             var provider = new AeadAes256CbcHmacSha512Provider(new AeadAes256CbcHmacSha512Cipher(), keyring);
             var cryptoManager = DefaultCryptoManager.Builder()
                 .LegacyAesDecryptors(keyring, "hmacKey")
-                .DefaultEncryptor(provider.Encryptor("upgrade-key"))
+                .Encryptor("upgrade-key", provider.Encryptor("upgrade-key"))
                 .Decryptor(provider.Decryptor())
                 .Build();
 

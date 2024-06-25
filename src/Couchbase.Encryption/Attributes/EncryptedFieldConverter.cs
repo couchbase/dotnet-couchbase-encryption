@@ -12,14 +12,14 @@ namespace Couchbase.Encryption.Attributes
     {
         private readonly PropertyInfo _propertyInfo;
         private readonly ICryptoManager _cryptoManager;
-        private readonly string _legacySigningKeyName;
+        private readonly string _signingKeyName;
         private static string NonLegacyAlgorithim = "AEAD_AES_256_CBC_HMAC_SHA512";
 
-        public EncryptedFieldConverter(PropertyInfo propertyInfo, ICryptoManager cryptoManager, string legacySigningKeyName)
+        public EncryptedFieldConverter(PropertyInfo propertyInfo, ICryptoManager cryptoManager, string signingKeyName)
         {
             _propertyInfo = propertyInfo;
             _cryptoManager = cryptoManager;
-            _legacySigningKeyName = legacySigningKeyName;
+            _signingKeyName = signingKeyName;
             SerializerSettings =
                 new JsonSerializerSettings
                 {
@@ -38,7 +38,7 @@ namespace Couchbase.Encryption.Attributes
             var rawJson = JsonConvert.SerializeObject(value, SerializerSettings);
             var plainText = Encoding.UTF8.GetBytes(rawJson);
 
-            var encryptionResult = _cryptoManager.Encrypt(plainText);
+            var encryptionResult = _cryptoManager.Encrypt(plainText, _signingKeyName);
             var token = encryptionResult.ToJObject();
 
             token.WriteTo(writer);
@@ -52,7 +52,7 @@ namespace Couchbase.Encryption.Attributes
             if (encryptedJObject.Value<string>("alg") != NonLegacyAlgorithim)
             {
                 //decrypt using the legacy algorithm - will upgrade on write back
-                var legacyPlainText = encryptedJObject.Decrypt(_cryptoManager, _legacySigningKeyName);
+                var legacyPlainText = encryptedJObject.Decrypt(_cryptoManager, _signingKeyName);
                 return ConvertToType(Encoding.UTF8.GetString(legacyPlainText));
             }
 
