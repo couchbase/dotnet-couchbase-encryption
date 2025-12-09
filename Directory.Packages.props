@@ -1,0 +1,34 @@
+<Project>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageVersion Include="CouchbaseNetClient" Version="3.8.1" />
+        <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="10.0.1" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.1" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.1" />
+        <PackageVersion Include="System.Formats.Asn1" Version="10.0.1" />
+        <PackageVersion Include="System.Security.Cryptography.Cng" Version="5.0.0" />
+        <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="10.0.1" />
+        <PackageVersion Include="System.Text.Json" Version="10.0.1" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(MSBuildProjectFile.Contains(`Test`))' == 'true' ">
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+        <PackageVersion Include="xunit" Version="2.9.3" />
+        <PackageVersion Include="xunit.assert" Version="2.9.3" />
+        <PackageVersion Include="xunit.extensibility.core" Version="2.9.3" />
+        <PackageVersion Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="10.0.1" />
+        <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageVersion>
+        <PackageVersion Include="xunit.analyzers" Version="1.26.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageVersion>
+    </ItemGroup>
+</Project>

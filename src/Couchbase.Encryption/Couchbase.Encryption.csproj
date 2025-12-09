@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
-    <LangVersion>10</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14</LangVersion>
     <PackageId>Couchbase.Extensions.Encryption</PackageId>
-    <Version>2.0.0-rc.1</Version>
+    <Version>2.1.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Description>Attribute based Field level encryption library for the .NET Couchbase SDK. Encrypted fields are protected in transit and at rest. Fields are transparently decrypted when they are retrieved from Couchbase within the application.</Description>
@@ -17,6 +17,8 @@
     <RepositoryUrl>https://github.com/couchbase/dotnet-couchbase-encryption</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
     <PackageTags>Couchbase, encryption, cryptography, nosql, JSON, database, field level</PackageTags>
+    <Copyright>Couchbase Inc, 2025</Copyright>
+    <AssemblyOriginatorKeyFile>Couchbase.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,10 +36,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CouchbaseNetClient" Version="3.4.13" />
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="8.0.0" />
-    <PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+    <PackageReference Include="CouchbaseNetClient" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="System.Formats.Asn1" />
+    <PackageReference Include="System.Security.Cryptography.Cng" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
 </Project>
